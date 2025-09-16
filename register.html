@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>إنشاء حساب - معهد صنعاء التقني</title>
+  <link rel="stylesheet" href="css/bootstrap.min.css" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+  />
+</head>
+<body>
+  <header>
+    <nav class="navbar navbar-expand-md navbar-dark bg-primary shadow-lg">
+      <div class="container">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="index.html" data-bs-toggle="tooltip" data-bs-placement="bottom" title="العودة إلى الصفحة الرئيسية">
+          <i class="fa-solid fa-graduation-cap fa-2x"></i>
+          <span>معهد صنعاء التقني</span>
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto mb-2 mb-md-0">
+            <li class="nav-item">
+              <a class="nav-link" href="index.html" data-bs-toggle="tooltip" data-bs-placement="bottom" title="الرئيسية">الرئيسية</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="about.html" data-bs-toggle="tooltip" data-bs-placement="bottom" title="من نحن">من نحن</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="courses.html" data-bs-toggle="tooltip" data-bs-placement="bottom" title="الدورات">الدورات</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="services.html" data-bs-toggle="tooltip" data-bs-placement="bottom" title="الخدمات">الخدمات</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="contact.html" data-bs-toggle="tooltip" data-bs-placement="bottom" title="تواصل معنا">تواصل معنا</a>
+            </li>
+          </ul>
+          <ul class="navbar-nav ms-auto mb-2 mb-md-0">
+            <li class="nav-item">
+              <a class="nav-link" href="login.html" data-bs-toggle="tooltip" data-bs-placement="bottom" title="تسجيل الدخول">تسجيل الدخول</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="register.html" data-bs-toggle="tooltip" data-bs-placement="bottom" title="إنشاء حساب">إنشاء حساب</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container my-5" style="max-width: 400px;">
+    <h2 class="text-center mb-4">إنشاء حساب جديد</h2>
+    <form id="registerUserForm" novalidate>
+      <div class="mb-3">
+        <label for="name" class="form-label">الاسم الكامل</label>
+        <input
+          type="text"
+          class="form-control"
+          id="name"
+          name="name"
+          required
+          minlength="3"
+        />
+        <div class="invalid-feedback">يرجى إدخال اسم صحيح (3 أحرف على الأقل).</div>
+      </div>
+      <div class="mb-3">
+        <label for="email" class="form-label">البريد الإلكتروني</label>
+        <input
+          type="email"
+          class="form-control"
+          id="email"
+          name="email"
+          required
+        />
+        <div class="invalid-feedback">يرجى إدخال بريد إلكتروني صالح.</div>
+      </div>
+      <div class="mb-3">
+        <label for="password" class="form-label">كلمة المرور</label>
+        <input
+          type="password"
+          class="form-control"
+          id="password"
+          name="password"
+          required
+          minlength="6"
+        />
+        <div class="invalid-feedback">
+          يرجى إدخال كلمة مرور لا تقل عن 6 أحرف.
+        </div>
+      </div>
+      <div class="mb-3">
+        <label for="confirmPassword" class="form-label">تأكيد كلمة المرور</label>
+        <input
+          type="password"
+          class="form-control"
+          id="confirmPassword"
+          name="confirmPassword"
+          required
+          minlength="6"
+        />
+        <div class="invalid-feedback">كلمتا المرور غير متطابقتين.</div>
+      </div>
+      <button type="submit" class="btn btn-success w-100">إنشاء الحساب</button>
+    </form>
+  </main>
+
+  <!-- إشعار Toast -->
+  <div
+    class="position-fixed bottom-0 end-0 p-3"
+    style="z-index: 11"
+    aria-live="polite"
+    aria-atomic="true"
+  >
+    <div
+      id="registerToast"
+      class="toast bg-success text-white"
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
+    >
+      <div class="toast-header">
+        <strong class="me-auto">إشعار</strong>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="toast"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="toast-body">تم إنشاء الحساب بنجاح!</div>
+    </div>
+  </div>
+
+  <script src="js/jquery-3.7.1.min.js"></script>
+  <script src="js/bootstrap.bundle.min.js"></script>
+  <script src="js/script.js"></script>
+</body>
+</html>

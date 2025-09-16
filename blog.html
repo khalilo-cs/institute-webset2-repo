@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>المدونة - معهد صنعاء التقني</title>
+  <link rel="stylesheet" href="css/bootstrap.min.css" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+</head>
+<body>
+  <header>
+    <nav class="navbar navbar-expand-md navbar-dark bg-primary shadow-lg">
+      <div class="container">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
+          <i class="fa-solid fa-graduation-cap fa-2x"></i>
+          <span>معهد صنعاء التقني</span>
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="تبديل التنقل"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto mb-2 mb-md-0">
+            <li class="nav-item"><a class="nav-link" href="index.html">الرئيسية</a></li>
+            <li class="nav-item"><a class="nav-link" href="about.html">من نحن</a></li>
+            <li class="nav-item"><a class="nav-link" href="courses.html">الدورات</a></li>
+            <li class="nav-item"><a class="nav-link" href="services.html">الخدمات</a></li>
+            <li class="nav-item"><a class="nav-link" href="contact.html">تواصل معنا</a></li>
+            <li class="nav-item"><a class="nav-link active" aria-current="page" href="blog.html">المدونة</a></li>
+            <li class="nav-item"><a class="nav-link" href="dashboard.html">لوحة التحكم</a></li>
+          </ul>
+          <ul class="navbar-nav me-auto mb-2 mb-md-0">
+            <li class="nav-item"><a class="nav-link" href="login.html">تسجيل الدخول</a></li>
+            <li class="nav-item"><a class="nav-link" href="register.html">إنشاء حساب</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container my-5 fade-in">
+    <h1 class="mb-4">أحدث المقالات</h1>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+      <article class="col slide-up">
+        <div class="card h-100 shadow">
+          <img src="images/laptop-code.jpg" class="card-img-top" alt="أهمية التعليم التقني في العصر الحديث" loading="lazy" />
+          <div class="card-body">
+            <h5 class="card-title">أهمية التعليم التقني في العصر الحديث</h5>
+            <p class="card-text">نظرة عامة على دور التعليم التقني في تطوير المهارات المهنية والمساهمة في التقدم التكنولوجي.</p>
+            <a href="#" class="btn btn-primary">اقرأ المزيد</a>
+          </div>
+          <div class="card-footer text-muted">
+            <small>نُشر في 10 سبتمبر 2025 بواسطة <strong>أحمد محمد</strong></small>
+          </div>
+        </div>
+      </article>
+      <article class="col slide-up">
+        <div class="card h-100 shadow">
+          <img src="images/team-work.jpg" class="card-img-top" alt="أفضل الدورات لتعلم البرمجة" loading="lazy" />
+          <div class="card-body">
+            <h5 class="card-title">أفضل الدورات لتعلم البرمجة</h5>
+            <p class="card-text">استعراض لأفضل الدورات المتاحة لتعلم لغات البرمجة المختلفة مع نصائح للمبتدئين.</p>
+            <a href="#" class="btn btn-primary">اقرأ المزيد</a>
+          </div>
+          <div class="card-footer text-muted">
+            <small>نُشر في 5 سبتمبر 2025 بواسطة <strong>فاطمة علي</strong></small>
+          </div>
+        </div>
+      </article>
+      <article class="col slide-up">
+        <div class="card h-100 shadow">
+          <img src="images/student-books.jpg" class="card-img-top" alt="كيفية اختيار الدورة المناسبة لك" loading="lazy" />
+          <div class="card-body">
+            <h5 class="card-title">كيفية اختيار الدورة المناسبة لك</h5>
+            <p class="card-text">نصائح عملية لاختيار الدورة التي تناسب أهدافك المهنية والتعليمية في مجال التكنولوجيا.</p>
+            <a href="#" class="btn btn-primary">اقرأ المزيد</a>
+          </div>
+          <div class="card-footer text-muted">
+            <small>نُشر في 1 سبتمبر 2025 بواسطة <strong>محمد حسن</strong></small>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <!-- Pagination -->
+    <nav aria-label="صفحات المدونة" class="mt-4">
+      <ul class="pagination justify-content-center">
+        <li class="page-item disabled"><a class="page-link" href="#" tabindex="-1">السابق</a></li>
+        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+        <li class="page-item"><a class="page-link" href="#">2</a></li>
+        <li class="page-item"><a class="page-link" href="#">3</a></li>
+        <li class="page-item"><a class="page-link" href="#">التالي</a></li>
+      </ul>
+    </nav>
+  </main>
+
+  <footer class="bg-dark text-white text-center p-4 mt-5">
+    <div class="container">
+      <div class="mb-2">
+        <a href="#" class="text-white mx-2"><i class="fab fa-facebook fa-lg"></i></a>
+        <a href="#" class="text-white mx-2"><i class="fab fa-twitter fa-lg"></i></a>
+        <a href="#" class="text-white mx-2"><i class="fab fa-instagram fa-lg"></i></a>
+      </div>
+      <div>جميع الحقوق محفوظة © معهد صنعاء 2025</div>
+    </div>
+  </footer>
+
+  <script src="js/jquery-3.7.1.min.js"></script>
+  <script src="js/bootstrap.bundle.min.js"></script>
+  <script src="js/script.js"></script>
+</body>
+</html>

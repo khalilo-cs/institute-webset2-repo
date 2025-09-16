@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>الدورات - معهد صنعاء</title>
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <style>
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      border: 1px solid #ccc;
+      padding: 15px;
+      border-radius: 8px;
+      background: #f9f9f9;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav class="navbar navbar-expand-md navbar-dark bg-primary shadow-lg">
+      <div class="container">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
+          <i class="fa-solid fa-graduation-cap fa-2x"></i>
+          <span>معهد صنعاء التقني</span>
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="تبديل التنقل"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto mb-2 mb-md-0">
+            <li class="nav-item">
+              <a class="nav-link" href="index.html">الرئيسية</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="about.html">من نحن</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="courses.html">الدورات</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="services.html">الخدمات</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="contact.html">تواصل معنا</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="blog.html">المدونة</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="dashboard.html">لوحة التحكم</a>
+            </li>
+          </ul>
+          <ul class="navbar-nav me-auto mb-2 mb-md-0">
+            <li class="nav-item">
+              <a class="nav-link" href="login.html">تسجيل الدخول</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="register.html">إنشاء حساب</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <section class="container my-5 grid">
+    <article class="card text-center slide-up">
+      <img src="images/laptop-code.jpg" alt="برمجة الويب - دورة شاملة في تطوير المواقع" class="img-fluid rounded shadow-lg border border-3 mb-2 course-img" style="max-width:120px;object-fit:cover;border-color:#4caf50;transition:transform .3s;" loading="lazy">
+      <h4>برمجة الويب</h4>
+      <div class="img-caption">برمجة على اللابتوب</div>
+      <p>HTML, CSS, JS, Bootstrap</p>
+      <div class="course-details">
+        <p><strong>السعر:</strong> 500 ريال</p>
+        <p><strong>التاريخ:</strong> 15 أكتوبر - 15 نوفمبر 2025</p>
+        <p><strong>المدة:</strong> 4 أسابيع</p>
+        <p><strong>المستوى:</strong> مبتدئ إلى متوسط</p>
+      </div>
+      <button class="btn btn-primary mt-2" onclick="openModal('modalCourse')">التفاصيل</button>
+    </article>
+    <article class="card text-center slide-up">
+      <img src="images/team-work.jpg" alt="إدارة المشاريع - دورة في إدارة المشاريع المهنية" class="img-fluid rounded shadow-lg border border-3 mb-2 course-img" style="max-width:120px;object-fit:cover;border-color:#00bcd4;transition:transform .3s;" loading="lazy">
+      <h4>إدارة المشاريع</h4>
+      <div class="img-caption">إدارة المشاريع</div>
+      <p>مبادئ التخطيط والتنفيذ باستخدام أدوات احترافية</p>
+      <div class="course-details">
+        <p><strong>السعر:</strong> 400 ريال</p>
+        <p><strong>التاريخ:</strong> 1 نوفمبر - 1 ديسمبر 2025</p>
+        <p><strong>المدة:</strong> 4 أسابيع</p>
+        <p><strong>المستوى:</strong> متوسط</p>
+      </div>
+      <button class="btn btn-primary mt-2" onclick="openModal('modalCourse')">التفاصيل</button>
+    </article>
+    <article class="card text-center slide-up">
+      <img src="images/student-books.jpg" alt="تصميم واجهات المستخدم - دورة في التصميم الرقمي" class="img-fluid rounded shadow-lg border border-3 mb-2 course-img" style="max-width:120px;object-fit:cover;border-color:#e91e63;transition:transform .3s;" loading="lazy">
+      <h4>تصميم واجهات المستخدم</h4>
+      <div class="img-caption">تصميم واجهات المستخدم</div>
+      <p>Figma و Adobe XD</p>
+      <div class="course-details">
+        <p><strong>السعر:</strong> 450 ريال</p>
+        <p><strong>التاريخ:</strong> 20 نوفمبر - 20 ديسمبر 2025</p>
+        <p><strong>المدة:</strong> 4 أسابيع</p>
+        <p><strong>المستوى:</strong> مبتدئ إلى متوسط</p>
+      </div>
+      <button class="btn btn-primary mt-2" onclick="openModal('modalCourse')">التفاصيل</button>
+    </article>
+  </section>
+  <style>
+    .img-caption {
+      text-align: center;
+      color: #388e3c;
+      font-weight: bold;
+      font-size: 1.1rem;
+      margin-top: 8px;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 8px #fff;
+      animation: fadeInUp 1.2s;
+    }
+    @keyframes fadeInUp {
+      0% { opacity: 0; transform: translateY(30px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+
+  <!-- Modal for course details -->
+  <div class="modal fade" id="modalCourse" tabindex="-1" aria-labelledby="modalCourseLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalCourseLabel">تفاصيل الدورة</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+        </div>
+        <div class="modal-body" id="modalCourseContent">
+          <!-- Content will be loaded here -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+          <button type="button" class="btn btn-primary">التسجيل في الدورة</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ التذييل بتصميم عصري -->
+  <footer class="bg-dark text-white text-center p-4 mt-5">
+    <div class="container">
+      <div class="mb-2">
+        <a href="#" class="text-white mx-2"><i class="fab fa-facebook fa-lg"></i></a>
+        <a href="#" class="text-white mx-2"><i class="fab fa-twitter fa-lg"></i></a>
+        <a href="#" class="text-white mx-2"><i class="fab fa-instagram fa-lg"></i></a>
+      </div>
+      <div>جميع الحقوق محفوظة © معهد صنعاء 2025</div>
+    </div>
+  </footer>
+
+  <script src="js/jquery-3.7.1.min.js"></script>
+  <script src="js/bootstrap.bundle.min.js"></script>
+  <script src="js/script.js"></script>
+</body>
+</html>

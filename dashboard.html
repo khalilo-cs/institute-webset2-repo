@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>لوحة التحكم - معهد صنعاء التقني</title>
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+<body>
+  <header>
+    <nav class="navbar navbar-expand-md navbar-dark bg-primary shadow-lg">
+      <div class="container">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
+          <i class="fa-solid fa-graduation-cap fa-2x"></i>
+          <span>معهد صنعاء التقني</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="تبديل التنقل">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item"><a class="nav-link" href="index.html">الرئيسية</a></li>
+            <li class="nav-item"><a class="nav-link" href="about.html">من نحن</a></li>
+            <li class="nav-item"><a class="nav-link" href="courses.html">الدورات</a></li>
+            <li class="nav-item"><a class="nav-link" href="contact.html">تواصل معنا</a></li>
+            <li class="nav-item"><a class="nav-link" href="services.html">الخدمات</a></li>
+            <li class="nav-item"><a class="nav-link" href="blog.html">المدونة</a></li>
+            <li class="nav-item"><a class="nav-link active" href="dashboard.html">لوحة التحكم</a></li>
+            <li class="nav-item"><a class="nav-link" href="#" onclick="logout()">تسجيل الخروج</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container my-5">
+    <h1 class="mb-4">مرحباً بك في لوحة التحكم</h1>
+    <div class="row">
+      <div class="col-md-4 mb-4">
+        <div class="card shadow">
+          <div class="card-body">
+            <h5 class="card-title"><i class="fas fa-user"></i> الملف الشخصي</h5>
+            <p class="card-text">عرض وتحديث معلوماتك الشخصية.</p>
+            <a href="#" class="btn btn-primary">عرض الملف</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 mb-4">
+        <div class="card shadow">
+          <div class="card-body">
+            <h5 class="card-title"><i class="fas fa-book"></i> دوراتي</h5>
+            <p class="card-text">إدارة الدورات المسجلة فيها.</p>
+            <a href="#" class="btn btn-success">عرض الدورات</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 mb-4">
+        <div class="card shadow">
+          <div class="card-body">
+            <h5 class="card-title"><i class="fas fa-chart-line"></i> التقدم</h5>
+            <p class="card-text">تتبع تقدمك في الدورات.</p>
+            <a href="#" class="btn btn-info">عرض التقدم</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6 mb-4">
+        <div class="card shadow">
+          <div class="card-body">
+            <h5 class="card-title"><i class="fas fa-bell"></i> الإشعارات</h5>
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item">تم تسجيلك في دورة جديدة.</li>
+              <li class="list-group-item">تم تحديث المحتوى في دورة البرمجة.</li>
+              <li class="list-group-item">موعد امتحان قريب.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 mb-4">
+        <div class="card shadow">
+          <div class="card-body">
+            <h5 class="card-title"><i class="fas fa-calendar"></i> الجدول الزمني</h5>
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item">اليوم: محاضرة في البرمجة الساعة 10 صباحاً.</li>
+              <li class="list-group-item">غداً: ورشة عمل في التصميم.</li>
+              <li class="list-group-item">الأسبوع القادم: امتحان نهائي.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="bg-dark text-white text-center p-4 mt-5">
+    <div class="container">
+      <div class="mb-2">
+        <a href="#" class="text-white mx-2"><i class="fab fa-facebook fa-lg"></i></a>
+        <a href="#" class="text-white mx-2"><i class="fab fa-twitter fa-lg"></i></a>
+        <a href="#" class="text-white mx-2"><i class="fab fa-instagram fa-lg"></i></a>
+      </div>
+      <div>جميع الحقوق محفوظة © معهد صنعاء 2025</div>
+    </div>
+  </footer>
+
+  <script src="js/jquery-3.7.1.min.js"></script>
+  <script src="js/bootstrap.bundle.min.js"></script>
+  <script src="js/script.js"></script>
+  <script>
+    function logout() {
+      // Simulate logout
+      alert('تم تسجيل الخروج');
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>

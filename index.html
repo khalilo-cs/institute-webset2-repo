@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>معهد صنعاء التقني</title>
+  <link rel="stylesheet" href="css/bootstrap.min.css" />
+  <link rel="stylesheet" href="css/wowslider.css" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+  />
+</head>
+<body>
+  <header>
+    <nav class="navbar navbar-expand-md navbar-dark bg-primary shadow-lg">
+      <div class="container">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
+          <i class="fa-solid fa-graduation-cap fa-2x"></i>
+          <span>معهد صنعاء التقني</span>
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="تبديل التنقل"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto mb-2 mb-md-0">
+            <li class="nav-item">
+              <a class="nav-link active" href="index.html" data-bs-toggle="tooltip" data-bs-placement="bottom" title="العودة إلى الصفحة الرئيسية">الرئيسية</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="about.html" data-bs-toggle="tooltip" data-bs-placement="bottom" title="معرفة المزيد عن المعهد">من نحن</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="courses.html" data-bs-toggle="tooltip" data-bs-placement="bottom" title="استعراض الدورات المتاحة">الدورات</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="services.html" data-bs-toggle="tooltip" data-bs-placement="bottom" title="خدماتنا المتنوعة">الخدمات</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="contact.html" data-bs-toggle="tooltip" data-bs-placement="bottom" title="تواصل معنا لأي استفسار">تواصل معنا</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="blog.html" data-bs-toggle="tooltip" data-bs-placement="bottom" title="قراءة مقالاتنا">المدونة</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="dashboard.html" data-bs-toggle="tooltip" data-bs-placement="bottom" title="لوحة التحكم الخاصة بك">لوحة التحكم</a>
+            </li>
+          </ul>
+          <ul class="navbar-nav me-auto mb-2 mb-md-0">
+            <li class="nav-item">
+              <a class="nav-link" href="login.html">تسجيل الدخول</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="register.html">إنشاء حساب</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container my-4 fade-in">
+    <!-- شريط الصور المتحرك -->
+    <section id="slider" class="mb-4 rounded shadow slide-up" aria-labelledby="slider-heading">
+      <h2 id="slider-heading" class="visually-hidden">معرض الصور</h2>
+      <div id="wowslider-container1">
+        <div class="ws_images">
+          <ul>
+            <li>
+              <img
+                src="images/chair-sea.jpg"
+                alt="كرسي على البحر - يمثل الراحة والإلهام"
+                class="img-fluid rounded shadow"
+                style="max-height: 350px; object-fit: cover"
+                loading="lazy"
+              />
+              <div class="slider-caption">كرسي على البحر</div>
+            </li>
+            <li>
+              <img
+                src="images/laptop-code.jpg"
+                alt="برمجة على اللابتوب - يمثل التعلم التقني"
+                class="img-fluid rounded shadow"
+                style="max-height: 350px; object-fit: cover"
+                loading="lazy"
+              />
+              <div class="slider-caption">برمجة على اللابتوب</div>
+            </li>
+            <li>
+              <img
+                src="images/mountains-sunset.jpg"
+                alt="غروب الجبال - يمثل الإنجاز والجمال"
+                class="img-fluid rounded shadow"
+                style="max-height: 350px; object-fit: cover"
+                loading="lazy"
+              />
+              <div class="slider-caption">غروب الجبال</div>
+            </li>
+            <li>
+              <img
+                src="images/team-work.jpg"
+                alt="عمل جماعي - يمثل التعاون في الفريق"
+                class="img-fluid rounded shadow"
+                style="max-height: 350px; object-fit: cover"
+                loading="lazy"
+              />
+              <div class="slider-caption">عمل جماعي</div>
+            </li>
+            <li>
+              <img
+                src="images/night-sky.jpg"
+                alt="سماء ليلية - يمثل الأحلام والإمكانيات"
+                class="img-fluid rounded shadow"
+                style="max-height: 350px; object-fit: cover"
+                loading="lazy"
+              />
+              <div class="slider-caption">سماء ليلية</div>
+            </li>
+          </ul>
+        </div>
+        <div class="ws_bullets">
+          <div>
+            <a href="#" title="كرسي على البحر" aria-label="الصورة الأولى"><span>1</span></a>
+            <a href="#" title="برمجة على اللابتوب" aria-label="الصورة الثانية"><span>2</span></a>
+            <a href="#" title="غروب الجبال" aria-label="الصورة الثالثة"><span>3</span></a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Carousel for Featured Courses -->
+    <section class="my-5 slide-up" aria-labelledby="featured-courses-heading">
+      <h2 id="featured-courses-heading" class="text-center mb-4"><i class="fa-solid fa-star"></i> دورات مميزة</h2>
+      <div id="featuredCoursesCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+          <div class="carousel-item active">
+            <div class="card text-center mx-auto" style="max-width: 400px;">
+              <img src="images/laptop-code.jpg" class="card-img-top" alt="برمجة الويب - دورة شاملة في تطوير المواقع" loading="lazy">
+              <div class="card-body">
+                <h5 class="card-title">برمجة الويب</h5>
+                <p class="card-text">تعلم HTML, CSS, JavaScript, Bootstrap</p>
+                <p class="text-primary fw-bold">السعر: 500 ريال | التاريخ: 15 أكتوبر 2025</p>
+                <a href="courses.html" class="btn btn-primary">التفاصيل</a>
+              </div>
+            </div>
+          </div>
+          <div class="carousel-item">
+            <div class="card text-center mx-auto" style="max-width: 400px;">
+              <img src="images/team-work.jpg" class="card-img-top" alt="إدارة المشاريع - دورة في إدارة المشاريع المهنية" loading="lazy">
+              <div class="card-body">
+                <h5 class="card-title">إدارة المشاريع</h5>
+                <p class="card-text">مبادئ التخطيط والتنفيذ باستخدام أدوات احترافية</p>
+                <p class="text-primary fw-bold">السعر: 400 ريال | التاريخ: 1 نوفمبر 2025</p>
+                <a href="courses.html" class="btn btn-primary">التفاصيل</a>
+              </div>
+            </div>
+          </div>
+          <div class="carousel-item">
+            <div class="card text-center mx-auto" style="max-width: 400px;">
+              <img src="images/student-books.jpg" class="card-img-top" alt="تصميم واجهات المستخدم - دورة في التصميم الرقمي" loading="lazy">
+              <div class="card-body">
+                <h5 class="card-title">تصميم واجهات المستخدم</h5>
+                <p class="card-text">Figma و Adobe XD لتصميم واجهات جذابة</p>
+                <p class="text-primary fw-bold">السعر: 450 ريال | التاريخ: 20 نوفمبر 2025</p>
+                <a href="courses.html" class="btn btn-primary">التفاصيل</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#featuredCoursesCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">السابق</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#featuredCoursesCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">التالي</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- نموذج التسجيل -->
+    <section id="registration" class="mb-4 slide-up" aria-labelledby="registration-heading">
+      <h2 id="registration-heading" class="text-center mb-3">سجل الآن في إحدى الدورات</h2>
+      <form id="registerForm" novalidate role="form" aria-describedby="registration-description">
+        <p id="registration-description" class="visually-hidden">املأ النموذج للتسجيل في دورة تدريبية</p>
+        <div class="mb-3">
+          <label for="name" class="form-label">الاسم الكامل</label>
+          <input
+            type="text"
+            class="form-control"
+            id="name"
+            name="name"
+            required
+            minlength="3"
+            aria-describedby="name-help"
+          />
+          <div id="name-help" class="form-text">أدخل اسمك الكامل (3 أحرف على الأقل)</div>
+          <div class="invalid-feedback">يرجى إدخال اسم صحيح (3 أحرف على الأقل).</div>
+        </div>
+        <div class="mb-3">
+          <label for="email" class="form-label">البريد الإلكتروني</label>
+          <input
+            type="email"
+            class="form-control"
+            id="email"
+            name="email"
+            required
+            aria-describedby="email-help"
+          />
+          <div id="email-help" class="form-text">أدخل بريدك الإلكتروني الصالح</div>
+          <div class="invalid-feedback">يرجى إدخال بريد إلكتروني صالح.</div>
+        </div>
+        <div class="mb-3">
+          <label for="course" class="form-label">اختر الدورة</label>
+          <select class="form-select" id="course" name="course" required aria-describedby="course-help">
+            <option value="">اختر الدورة</option>
+            <option value="web">برمجة الويب - 500 ريال</option>
+            <option value="project">إدارة المشاريع - 400 ريال</option>
+            <option value="ui">تصميم واجهات المستخدم - 450 ريال</option>
+          </select>
+          <div id="course-help" class="form-text">اختر الدورة التي تريد التسجيل فيها</div>
+          <div class="invalid-feedback">يرجى اختيار دورة.</div>
+        </div>
+        <button type="submit" class="btn btn-success w-100" aria-describedby="submit-help">تسجيل</button>
+        <div id="submit-help" class="form-text text-center">سيتم التحقق من البيانات قبل الإرسال</div>
+      </form>
+    </section>
+
+    <!-- أزرار فتح النوافذ -->
+    <section class="text-center mb-4 slide-up" aria-labelledby="actions-heading">
+      <h2 id="actions-heading" class="visually-hidden">إجراءات سريعة</h2>
+      <button class="btn btn-info me-2" onclick="openModal('modalCourse')" aria-label="فتح تفاصيل الدورة" data-bs-toggle="tooltip" data-bs-placement="top" title="عرض تفاصيل الدورات المتاحة">
+        <i class="fas fa-info-circle"></i> تفاصيل الدورة
+      </button>
+      <button class="btn btn-warning" onclick="openModal('modalNews')" aria-label="عرض خبر جديد" data-bs-toggle="tooltip" data-bs-placement="top" title="قراءة آخر الأخبار">
+        <i class="fas fa-newspaper"></i> عرض خبر
+      </button>
+    </section>
+
+    <!-- معرض الصور -->
+    <section class="gallery mb-4 slide-up" aria-labelledby="gallery-heading">
+      <h2 id="gallery-heading" class="text-center mb-4">معرض الصور</h2>
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <img src="images/chair-sea.jpg" alt="كرسي على البحر - لحظة إلهام" class="img-fluid rounded shadow" loading="lazy" data-bs-toggle="modal" data-bs-target="#imageModal" data-bs-image="images/chair-sea.jpg" data-bs-caption="كرسي على البحر">
+        </div>
+        <div class="col-md-4 mb-3">
+          <img src="images/laptop-code.jpg" alt="برمجة على اللابتوب - تعلم التقنية" class="img-fluid rounded shadow" loading="lazy" data-bs-toggle="modal" data-bs-target="#imageModal" data-bs-image="images/laptop-code.jpg" data-bs-caption="برمجة على اللابتوب">
+        </div>
+        <div class="col-md-4 mb-3">
+          <img src="images/mountains-sunset.jpg" alt="غروب الجبال - الإنجاز والجمال" class="img-fluid rounded shadow" loading="lazy" data-bs-toggle="modal" data-bs-target="#imageModal" data-bs-image="images/mountains-sunset.jpg" data-bs-caption="غروب الجبال">
+        </div>
+        <div class="col-md-4 mb-3">
+          <img src="images/team-work.jpg" alt="عمل جماعي - التعاون في الفريق" class="img-fluid rounded shadow" loading="lazy" data-bs-toggle="modal" data-bs-target="#imageModal" data-bs-image="images/team-work.jpg" data-bs-caption="عمل جماعي">
+        </div>
+        <div class="col-md-4 mb-3">
+          <img src="images/night-sky.jpg" alt="سماء ليلية - الأحلام والإمكانيات" class="img-fluid rounded shadow" loading="lazy" data-bs-toggle="modal" data-bs-target="#imageModal" data-bs-image="images/night-sky.jpg" data-bs-caption="سماء ليلية">
+        </div>
+        <div class="col-md-4 mb-3">
+          <img src="images/student-books.jpg" alt="طالب مع الكتب - التعلم المستمر" class="img-fluid rounded shadow" loading="lazy" data-bs-toggle="modal" data-bs-target="#imageModal" data-bs-image="images/student-books.jpg" data-bs-caption="طالب مع الكتب">
+        </div>
+      </div>
+    </section>
+
+    <!-- نوافذ Modal -->
+    <div
+      class="modal fade"
+      id="modalCourse"
+      tabindex="-1"
+      aria-labelledby="modalCourseLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalCourseLabel">تفاصيل الدورة</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body" id="modalCourseContent">
+            <div class="d-flex justify-content-center">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">جاري التحميل...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="modal fade"
+      id="modalNews"
+      tabindex="-1"
+      aria-labelledby="modalNewsLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalNewsLabel">خبر جديد</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body" id="modalNewsContent">
+            <div class="d-flex justify-content-center">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">جاري التحميل...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- إشعار Toast -->
+    <div
+      class="position-fixed bottom-0 end-0 p-3"
+      style="z-index: 11"
+      aria-live="polite"
+      aria-atomic="true"
+    >
+      <div
+        id="liveToast"
+        class="toast bg-success text-white"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+      >
+        <div class="toast-header">
+          <strong class="me-auto">إشعار</strong>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="toast"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="toast-body">تم التسجيل بنجاح!</div>
+      </div>
+    </div>
+
+    <!-- Modal للصور -->
+    <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="imageModalLabel">معرض الصور</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body text-center">
+            <img id="modalImage" src="" alt="" class="img-fluid rounded shadow">
+            <p id="modalCaption" class="mt-3"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="bg-dark text-white text-center p-4 mt-5">
+    <div class="container">
+      <div class="mb-2">
+        <a href="#" class="text-white mx-2"
+          ><i class="fab fa-facebook fa-lg"></i
+        ></a>
+        <a href="#" class="text-white mx-2"
+          ><i class="fab fa-twitter fa-lg"></i
+        ></a>
+        <a href="#" class="text-white mx-2"
+          ><i class="fab fa-instagram fa-lg"></i
+        ></a>
+      </div>
+      <div>جميع الحقوق محفوظة © معهد صنعاء 2025</div>
+    </div>
+  </footer>
+
+  <script src="js/jquery-3.7.1.min.js"></script>
+  <script src="js/bootstrap.bundle.min.js"></script>
+  <script src="js/wowslider.js"></script>
+  <script src="js/script.js"></script>
+</body>
+</html>
