@@ -250,7 +250,7 @@ def store_file(db_path: str, filename: str, content_base64: str, conversation_id
     digest = hashlib.sha256(data).hexdigest()
     now = _now()
     try:
-        with _connect(str(db)) as con:
+        with _db(str(db)) as con:
             if conversation_id and not con.execute("SELECT 1 FROM conversations WHERE id=?",
                                                    (conversation_id,)).fetchone():
                 raise KeyError("Conversation not found")
