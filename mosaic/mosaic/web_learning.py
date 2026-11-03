@@ -138,6 +138,10 @@ def learn_website(start_url: str, db_path: str, max_pages: int = MAX_PAGES):
                 if not fetched: continue
                 html, final_url = fetched
                 final_url = _public_url(final_url)
+                final_parts = urllib.parse.urlsplit(final_url)
+                if (final_parts.scheme, final_parts.netloc) != origin:
+                    skipped.append({"url": current, "reason": "تم تجاوز إعادة توجيه خارج النطاق الأصلي"})
+                    continue
                 parser = TextExtractor()
                 parser.feed(html)
                 text = re.sub(r"\n{3,}", "\n\n", "\n".join(parser.parts)).strip()
