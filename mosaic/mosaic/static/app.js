@@ -246,31 +246,38 @@ async function loadWebSources() {
   } catch (e) { $("sourcelist").textContent = e.message; }
 }
 $("reloadsources").onclick = loadWebSources;
-let selectedFileTexts = [];
+let phoneFileIds = [];
 $("phonefiles").onchange = async (event) => {
-  selectedFileTexts = [];
+  phoneFileIds = [];
+  $("filelist").textContent = "جارٍ رفع الملفات المختارة بأمان…";
   const files = Array.from(event.target.files || []).slice(0, 10);
   for (const file of files) {
-    if (file.size > 1_000_000) continue;
+    if (file.size > 20 * 1024 * 1024) {
+      $("filelist").appendChild(el("p", file.name + ": الحد الأقصى 20MB.", "bad"));
+      continue;
+    }
     try {
-      const text = await file.text();
-      selectedFileTexts.push({name: file.name, text: text.slice(0, 100_000)});
-    } catch (_) {}
+      const saved = await api("/api/files/upload", {
+        filename: file.name, content_base64: await encodeFileBase64(file)
+      });
+      phoneFileIds.push(saved.id);
+      $("filelist").appendChild(el("p",
+        saved.name + " · " + saved.mime_type + " · " + saved.size_bytes + " bytes · " +
+        (saved.extracted_characters ? saved.extracted_characters + " حرف مستخرج" : "محفوظ؛ يحتاج محلل متخصص"),
+        "note"));
+    } catch (e) { $("filelist").appendChild(el("p", file.name + ": " + e.message, "bad")); }
   }
-  $("filelist").textContent = "تمت قراءة " + selectedFileTexts.length + " ملف نصي من الملفات التي اخترتها فقط.";
+  if (!files.length) $("filelist").textContent = "لم يتم اختيار ملفات.";
+  event.target.value = "";
 };
-$("fileask").onclick = () => {
-  const q = $("filequestion").value.trim();
-  const terms = q.toLowerCase().split(/\s+/).filter(x => x.length > 2);
-  const box = $("fileoutput"); box.replaceChildren();
-  if (!selectedFileTexts.length) { box.textContent = "اختر ملفات نصية أولاً."; return; }
-  selectedFileTexts.forEach(f => {
-    const lines = f.text.split(/\r?\n/);
-    const matches = lines.filter(line => !terms.length || terms.some(term => line.toLowerCase().includes(term))).slice(0, 8);
-    const item = el("div", null, "resultitem");
-    item.append(el("b", f.name), el("pre", matches.join("\n") || "لم توجد أسطر مطابقة."));
-    box.appendChild(item);
-  });
+$("fileask").onclick = async () => {
+  const question = $("filequestion").value.trim();
+  if (!phoneFileIds.length) { $("fileoutput").textContent = "اختر الملفات وارفعها أولاً."; return; }
+  $("fileoutput").textContent = "جارٍ تحليل المحتوى…";
+  try {
+    const r = await api("/api/files/ask", {file_ids: phoneFileIds, question, private: true});
+    $("fileoutput").replaceChildren(el("p", r.answer), el("p", "المزوّد: " + (r.provider || "غير محدد"), "note"));
+  } catch (e) { $("fileoutput").textContent = e.message; }
 };
 document.querySelectorAll("#tabs button").forEach(b => {
   const old = b.onclick;
