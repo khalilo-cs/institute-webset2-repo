@@ -294,9 +294,33 @@ let attachedFileIds = [];
 function renderChatMessages(messages) {
   const box = $("chatmessages"); box.replaceChildren();
   (messages || []).forEach(m => {
+    const wrap = el("div", null, "message-wrap");
     const node = el("div", null, "message " + m.role);
     node.textContent = m.content || "";
-    box.appendChild(node);
+    wrap.appendChild(node);
+    if (m.role === "assistant" && m.id) {
+      const controls = el("div", null, "row chat-feedback");
+      const good = el("button", "إجابة مفيدة", "btn alt");
+      good.onclick = async () => {
+        try {
+          await api("/api/chat/feedback", {message_id: m.id, rating: "useful"});
+          controls.replaceChildren(el("span", "شكراً، تم حفظ تقييمك.", "note"));
+        } catch (e) { alert(e.message); }
+      };
+      const bad = el("button", "إجابة غير دقيقة", "btn alt");
+      bad.onclick = async () => {
+        const correction = prompt("اكتب التصحيح الذي تريد من MOSAIC الاستفادة منه:");
+        if (correction === null) return;
+        if (!correction.trim()) { alert("اكتب التصحيح أولاً."); return; }
+        try {
+          await api("/api/chat/feedback", {message_id: m.id, rating: "not_accurate", correction});
+          controls.replaceChildren(el("span", "حُفظ التصحيح في المعرفة القابلة للاسترجاع.", "note"));
+        } catch (e) { alert(e.message); }
+      };
+      controls.append(good, bad);
+      wrap.appendChild(controls);
+    }
+    box.appendChild(wrap);
   });
   box.scrollTop = box.scrollHeight;
 }
