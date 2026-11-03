@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import os
+from urllib.parse import urlsplit, parse_qs
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
@@ -46,7 +47,8 @@ def make_handler(mo: Mosaic):
             return data
 
         def do_GET(self):
-            path = self.path.split("?", 1)[0]
+            parsed = urlsplit(self.path)
+            path = parsed.path
             if path in ("/", "/index.html"):
                 return self._send(200, (STATIC / "index.html").read_bytes(), "text/html; charset=utf-8")
             if path == "/app.js":
@@ -61,8 +63,11 @@ def make_handler(mo: Mosaic):
                 from .memory import DEFAULT_SETTINGS
                 return self._send(200, {k: mo.m.setting(k) for k in DEFAULT_SETTINGS})
             if path == "/api/conversations":
-                from .workspace import list_conversations
-                return self._send(200, {"conversations": list_conversations(os.environ.get("MOSAIC_DB", "mosaic.db"))})
+                from .workspace import list_conversations, search_conversations
+                db_path = os.environ.get("MOSAIC_DB", "mosaic.db")
+                query = parse_qs(parsed.query).get("q", [""])[0]
+                items = search_conversations(db_path, query) if query else list_conversations(db_path)
+                return self._send(200, {"conversations": items})
             if path.startswith("/api/conversations/"):
                 from .workspace import get_conversation
                 cid = path.rsplit("/", 1)[-1]
