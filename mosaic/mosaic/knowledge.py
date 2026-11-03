@@ -228,7 +228,7 @@ def save_chat_feedback(db_path: str, message_id: str, rating: str, correction: s
         feedback_columns = {row["name"] for row in con.execute("PRAGMA table_info(chat_feedback)")}
         if "allow_training" not in feedback_columns:
             con.execute("ALTER TABLE chat_feedback ADD COLUMN allow_training INTEGER NOT NULL DEFAULT 0")
-        opted_in = bool(allow_training and rating == "not_accurate" and correction)
+        opted_in = bool(allow_training is True and rating == "not_accurate" and correction)
         con.execute(
             "INSERT INTO chat_feedback(message_id,rating,correction,created_at,allow_training) VALUES(?,?,?,?,?) "
             "ON CONFLICT(message_id) DO UPDATE SET rating=excluded.rating,"
