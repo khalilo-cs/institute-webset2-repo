@@ -194,3 +194,51 @@ def knowledge_stats(db_path: str) -> dict:
         return dict(row)
     finally:
         con.close()
+
+
+def save_chat_feedback(db_path: str, message_id: str, rating: str, correction: str = "") -> dict:
+    """Persist explicit chat feedback; only user-written corrections enter searchable knowledge."""
+    from datetime import datetime, timezone
+    from .workspace import _connect as workspace_connect
+    if rating not in {"useful", "not_accurate"}:
+        raise ValueError("rating must be useful or not_accurate")
+    if not message_id:
+        raise ValueError("message_id is required")
+    correction = correction.strip()
+    if rating == "not_accurate" and not correction:
+        raise ValueError("A correction is required for an inaccurate answer")
+    source_con = workspace_connect(db_path)
+    try:
+        message = source_con.execute(
+            "SELECT id,role FROM chat_messages WHERE id=?", (message_id,)
+        ).fetchone()
+    finally:
+        source_con.close()
+    if not message or message["role"] != "assistant":
+        raise KeyError("Assistant message not found")
+    now = datetime.now(timezone.utc).isoformat()
+    feedback_id = "chat-feedback-" + message_id
+    con = _connect(db_path)
+    try:
+        con.execute("""CREATE TABLE IF NOT EXISTS chat_feedback(
+            message_id TEXT PRIMARY KEY, rating TEXT NOT NULL,
+            correction TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL)""")
+        con.execute(
+            "INSERT INTO chat_feedback(message_id,rating,correction,created_at) VALUES(?,?,?,?) "
+            "ON CONFLICT(message_id) DO UPDATE SET rating=excluded.rating,"
+            "correction=excluded.correction,created_at=excluded.created_at",
+            (message_id, rating, correction, now))
+        if correction:
+            digest = hashlib.sha256(correction.encode("utf-8")).hexdigest()
+            con.execute("DELETE FROM knowledge_chunks WHERE file_id=?", (feedback_id,))
+            con.execute(
+                "INSERT INTO knowledge_chunks(file_id,chunk_index,source_name,source_sha256,content,"
+                "content_hash,created_at,content_kind,model_provider) VALUES(?,?,?,?,?,?,?,?,?)",
+                (feedback_id, 0, "تصحيح المستخدم للمحادثة", digest, correction, digest,
+                 now, "user_correction", "user"))
+        elif rating == "useful":
+            con.execute("DELETE FROM knowledge_chunks WHERE file_id=?", (feedback_id,))
+        con.commit()
+    finally:
+        con.close()
+    return {"ok": True, "rating": rating, "correction_indexed": bool(correction)}
