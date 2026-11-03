@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MOSAIC</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--text:#1b1f24;--muted:#5f6b7a;--line:#e3e7ec;--accent:#2f6fde;--ok:#1f8a4c;--warn:#b26a00;--bad:#c23a3a;--chip:#eef2f8}
+@media (prefers-color-scheme:dark){:root{--bg:#111418;--card:#1a1f25;--text:#e8ecf1;--muted:#9aa6b5;--line:#2a313a;--accent:#6aa0ff;--ok:#4cc28a;--warn:#e0a24a;--bad:#ef7070;--chip:#232a33}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif}
+header{padding:14px 16px;border-bottom:1px solid var(--line);background:var(--card);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+header h1{margin:0;font-size:20px;letter-spacing:.5px}
+header .sub{color:var(--muted);font-size:13px}
+nav{display:flex;gap:6px;flex-wrap:wrap;padding:10px 16px}
+nav button{border:1px solid var(--line);background:var(--card);color:var(--text);padding:6px 12px;border-radius:8px;cursor:pointer}
+nav button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+main{padding:0 16px 40px;max-width:1100px;margin:0 auto}
+section{display:none}section.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin:12px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px}
+.kpi b{display:block;font-size:24px}.kpi span{color:var(--muted);font-size:13px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:start;padding:7px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600}
+.tw{overflow-x:auto}
+.chip{display:inline-block;padding:1px 8px;border-radius:999px;background:var(--chip);font-size:12px}
+.ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}.muted{color:var(--muted)}
+input,select,textarea{width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);font:inherit}
+label{display:block;margin:8px 0 4px;color:var(--muted);font-size:13px}
+.btn{border:0;background:var(--accent);color:#fff;padding:8px 14px;border-radius:8px;cursor:pointer;font:inherit;margin-top:8px}
+.btn.alt{background:var(--chip);color:var(--text)}.btn.bad{background:var(--bad)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.bar{height:8px;background:var(--chip);border-radius:4px;overflow:hidden;min-width:80px}
+.bar i{display:block;height:100%;background:var(--ok)}
+pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);padding:10px;border-radius:8px;font-size:13px}
+.note{font-size:13px;color:var(--muted)}
+</style>
+</head>
+<body>
+<header>
+  <h1>MOSAIC</h1>
+  <span class="sub">نظام يتعلم باستمرار، يثبت تحسنه، ويستقل عن النماذج التي تعلّم منها</span>
+  <span id="net" class="chip"></span>
+</header>
+<nav id="tabs">
+  <button data-t="dash" class="on">لوحة إثبات التطور</button>
+  <button data-t="task">المهام</button>
+  <button data-t="approve">الموافقات</button>
+  <button data-t="teach">تعليم</button>
+  <button data-t="settings">الإعدادات</button>
+  <button data-t="log">السجل</button>
+</nav>
+<main>
+  <section id="dash" class="on">
+    <div class="row"><button class="btn" id="learn">تشغيل دورة تعلم</button><span id="learnmsg" class="note"></span></div>
+    <div class="grid" id="kpis" style="margin-top:12px"></div>
+    <div class="card"><h3>الفئات: الأداء على مهام مستقلة والاستقلال عن المعلّم</h3><div class="tw"><table id="cats"></table></div>
+      <p class="note">«الدقة المستقلة» تُقاس على أمثلة لم تُستخدم في التعلم ولم تُرسل إلى أي نموذج معلّم. لا يُعرض عدد الذكريات كدليل على الذكاء.</p></div>
+    <div class="card"><h3>التحسينات (المعتمدة والمرفوضة)</h3><div class="tw"><table id="imps"></table></div></div>
+    <div class="card"><h3>النماذج المعلّمة: الدقة المقاسة فعليًا</h3><div class="tw"><table id="models"></table></div></div>
+    <div class="card"><h3>مصادر المعرفة</h3><div class="tw"><table id="sources"></table></div></div>
+    <div class="card"><h3>الأدوات التي طوّرها النظام</h3><div class="tw"><table id="tools"></table></div></div>
+    <div class="card"><h3>الأخطاء المتكررة</h3><div class="tw"><table id="errors"></table></div></div>
+  </section>
+
+  <section id="task">
+    <div class="card">
+      <label>الفئة</label><select id="tcat"></select>
+      <label>المدخل</label><input id="tin" placeholder="اكتب المهمة">
+      <label class="row"><input type="checkbox" id="tpriv" style="width:auto"> بيانات خاصة (لا تُرسل لأي نموذج خارجي)</label>
+      <button class="btn" id="tgo">نفّذ</button>
+      <div id="tout"></div>
+    </div>
+  </section>
+
+  <section id="approve"><div class="card"><h3>تغييرات تنتظر موافقتك</h3><div id="pending"></div></div></section>
+
+  <section id="teach">
+    <div class="card"><h3>إضافة فئة جديدة (بلا حد لعدد الفئات)</h3>
+      <label>الاسم (حروف لاتينية بلا مسافات)</label><input id="cname">
+      <label>النوع</label><select id="ckind"><option value="transform">تحويل / إجراء</option><option value="qa">سؤال وجواب / معرفة</option></select>
+      <label>الوصف (يُرسل للمعلّم)</label><input id="cdesc">
+      <label>اللغة</label><input id="clang" value="ar">
+      <button class="btn" id="cadd">أضف</button><span id="cmsg" class="note"></span>
+    </div>
+    <div class="card"><h3>أمثلة مُتحقق منها</h3>
+      <label>الفئة</label><select id="ecat"></select>
+      <label>سطر لكل مثال: المدخل ⇥ (Tab) أو | ثم المخرج</label><textarea id="epairs" rows="6"></textarea>
+      <label>التقسيم</label><select id="esplit"><option value="">تلقائي (٣٠٪ اختبار مستقل)</option><option value="dev">تطوير</option><option value="heldout">اختبار مستقل</option></select>
+      <button class="btn" id="eadd">احفظ</button><span id="emsg" class="note"></span>
+    </div>
+  </section>
+
+  <section id="settings"><div class="card"><h3>الإعدادات والحدود</h3><div id="sets"></div><button class="btn" id="ssave">احفظ</button><span id="smsg" class="note"></span></div>
+    <div class="card"><h3>حالة الجهاز (يرسلها تطبيق الهاتف)</h3><pre id="device"></pre></div></section>
+
+  <section id="log"><div class="card"><h3>سجل التغييرات (لا يقبل التعديل أو الحذف)</h3><div class="tw"><table id="clog"></table></div></div>
+    <div class="card"><h3>المهام المجدولة</h3><div class="tw"><table id="jobs"></table></div></div>
+    <div class="card"><h3>طابور التحقق</h3><div class="tw"><table id="vq"></table></div></div></section>
+</main>
+<script src="/app.js"></script>
+</body>
+</html>
