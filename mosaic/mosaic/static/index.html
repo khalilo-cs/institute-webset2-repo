@@ -196,6 +196,9 @@ textarea{resize:vertical}
     </div>
     <div class="card">
       <h3>تشغيل التدريب على الكمبيوتر</h3>
+      <label for="trainingmodel">النموذج الأساسي (Hugging Face ID أو مسار محلي)</label>
+      <input id="trainingmodel" value="Qwen/Qwen2.5-0.5B-Instruct">
+      <p class="note">يجب أن تستخدم لاحقاً نفس النموذج الأساسي نفسه عند تحميل محوّل LoRA. غيّر هذا الحقل فقط إلى نموذج متوافق تعرف أن جهازك يستطيع تشغيله.</p>
       <p>تجهيز البيانات لا يدرّب الأوزان. بعد تنزيل متطلبات التدريب والنموذج الأساسي، شغّل الأمر التالي من مجلد المشروع على Windows أو Linux. سيُنتج محوّل LoRA، ثم يقارن خسارة الاختبار المستقل قبل التدريب وبعده.</p>
       <pre id="trainingcommand">اضغط «جهّز بيانات التدريب» أولاً لعرض المسارات الصحيحة.</pre>
       <div class="row"><button class="btn alt" id="trainingcopy" disabled>نسخ أوامر التدريب</button></div>
