@@ -129,3 +129,136 @@ $("ssave").onclick = () => {
 };
 
 refresh();
+
+
+// MOSAIC extended workspaces: speech, consent-based local files, and web knowledge.
+let speechRecognition = null;
+function speechAvailable() { return !!(window.SpeechRecognition || window.webkitSpeechRecognition); }
+function say(text) {
+  if (!("speechSynthesis" in window)) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(String(text || ""));
+  utterance.lang = "ar";
+  window.speechSynthesis.speak(utterance);
+}
+function fillVoiceCategories() {
+  const src = $("tcat"), dst = $("vcat");
+  if (!src || !dst) return;
+  dst.replaceChildren(...Array.from(src.options).map(o => {
+    const n = document.createElement("option"); n.value = o.value; n.textContent = o.textContent; return n;
+  }));
+}
+$("vlisten").onclick = () => {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { $("vresult").textContent = "التعرف الصوتي غير مدعوم في WebView هذا الجهاز. يمكنك استخدام لوحة المفاتيح الصوتية في الهاتف ثم إرسال النص."; return; }
+  try {
+    speechRecognition = new SR();
+    speechRecognition.lang = "ar-SA";
+    speechRecognition.continuous = false;
+    speechRecognition.interimResults = true;
+    speechRecognition.onresult = (event) => {
+      let text = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) text += event.results[i][0].transcript;
+      $("vinput").value = text;
+    };
+    speechRecognition.onerror = (event) => { $("vresult").textContent = "تعذر التعرف على الكلام: " + event.error; };
+    speechRecognition.onend = () => { $("vlisten").textContent = "🎙 ابدأ الاستماع"; };
+    speechRecognition.start();
+    $("vlisten").textContent = "يستمع الآن…";
+  } catch (e) { $("vresult").textContent = e.message; }
+};
+$("vstop").onclick = () => { if (speechRecognition) speechRecognition.stop(); };
+$("vsend").onclick = async () => {
+  const input = $("vinput").value.trim();
+  if (!input) { $("vresult").textContent = "تحدث أو اكتب سؤالك أولاً."; return; }
+  $("vresult").textContent = "يفكر MOSAIC…";
+  try {
+    const r = await api("/api/task", {category: $("vcat").value || $("tcat").value, input, private: false});
+    const answer = r.answer || "لم أتمكن من إنتاج إجابة.";
+    $("vresult").textContent = answer + " — المصدر: " + (r.solver || "MOSAIC");
+    if ($("vspeak").checked) say(answer);
+  } catch (e) { $("vresult").textContent = e.message; }
+};
+$("sitelearn").onclick = async () => {
+  const url = $("siteurl").value.trim();
+  if (!url) { $("siteprogress").textContent = "أدخل رابطاً أولاً."; return; }
+  const max_pages = Math.max(1, Math.min(8, Number($("sitepages").value) || 8));
+  $("siteprogress").textContent = "جارٍ فحص الموقع واحترام robots.txt…";
+  $("sitelearn").disabled = true;
+  try {
+    const r = await api("/api/learn-url", {url, max_pages});
+    $("siteprogress").textContent = "اكتمل الجمع: " + r.pages_saved + " صفحة محفوظة، " + r.pages_skipped + " صفحة متجاوزة.";
+    const box = document.createElement("div");
+    (r.pages || []).forEach(p => {
+      const item = el("div", null, "resultitem");
+      const a = el("a", p.title); a.href = p.url; a.target = "_blank"; a.rel = "noopener noreferrer";
+      item.append(a, el("div", p.characters + " حرف · SHA-256 " + p.sha256.slice(0, 16), "note"));
+      box.appendChild(item);
+    });
+    if (r.skipped && r.skipped.length) box.appendChild(el("p", "بعض الصفحات لم تُجمع: " + r.skipped.map(x => x.reason).join("؛ "), "note"));
+    $("siteprogress").appendChild(box);
+    loadWebSources();
+  } catch (e) { $("siteprogress").textContent = "تعذر التعلم: " + e.message; }
+  finally { $("sitelearn").disabled = false; }
+};
+$("knowsearch").onclick = async () => {
+  $("knowresults").replaceChildren(el("p", "جارٍ البحث…", "note"));
+  try {
+    const r = await api("/api/search-knowledge", {query: $("knowledgequery").value});
+    const box = $("knowresults"); box.replaceChildren();
+    if (!r.results.length) box.appendChild(el("p", "لم أعثر على نتائج. أضف مواقع أو جرّب كلمات أخرى.", "note"));
+    r.results.forEach(x => {
+      const item = el("div", null, "resultitem");
+      const a = el("a", x.title); a.href = x.url; a.target = "_blank"; a.rel = "noopener noreferrer";
+      item.append(a, el("p", x.excerpt), el("span", "درجة التطابق: " + x.score, "chip"));
+      box.appendChild(item);
+    });
+  } catch (e) { $("knowresults").textContent = e.message; }
+};
+async function loadWebSources() {
+  try {
+    const r = await api("/api/web-sources");
+    const box = $("sourcelist"); box.replaceChildren();
+    if (!r.sources.length) box.appendChild(el("p", "لا توجد مصادر محفوظة بعد.", "note"));
+    r.sources.forEach(s => {
+      const item = el("div", null, "resultitem");
+      const a = el("a", s.title || s.url); a.href = s.url; a.target = "_blank"; a.rel = "noopener noreferrer";
+      item.append(a, el("div", s.characters + " حرف · " + when(s.fetched_at), "note"));
+      box.appendChild(item);
+    });
+  } catch (e) { $("sourcelist").textContent = e.message; }
+}
+$("reloadsources").onclick = loadWebSources;
+let selectedFileTexts = [];
+$("phonefiles").onchange = async (event) => {
+  selectedFileTexts = [];
+  const files = Array.from(event.target.files || []).slice(0, 10);
+  for (const file of files) {
+    if (file.size > 1_000_000) continue;
+    try {
+      const text = await file.text();
+      selectedFileTexts.push({name: file.name, text: text.slice(0, 100_000)});
+    } catch (_) {}
+  }
+  $("filelist").textContent = "تمت قراءة " + selectedFileTexts.length + " ملف نصي من الملفات التي اخترتها فقط.";
+};
+$("fileask").onclick = () => {
+  const q = $("filequestion").value.trim();
+  const terms = q.toLowerCase().split(/\\s+/).filter(x => x.length > 2);
+  const box = $("fileoutput"); box.replaceChildren();
+  if (!selectedFileTexts.length) { box.textContent = "اختر ملفات نصية أولاً."; return; }
+  selectedFileTexts.forEach(f => {
+    const lines = f.text.split(/\\r?\\n/);
+    const matches = lines.filter(line => !terms.length || terms.some(term => line.toLowerCase().includes(term))).slice(0, 8);
+    const item = el("div", null, "resultitem");
+    item.append(el("b", f.name), el("pre", matches.join("\\n") || "لم توجد أسطر مطابقة."));
+    box.appendChild(item);
+  });
+};
+document.querySelectorAll("#tabs button").forEach(b => {
+  const old = b.onclick;
+  b.addEventListener("click", () => {
+    if (b.dataset.t === "voice") fillVoiceCategories();
+    if (b.dataset.t === "knowledge") loadWebSources();
+  });
+});
