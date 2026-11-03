@@ -36,16 +36,32 @@ android {
     }
 }
 
+// Copy only the authoritative Python package and its UI assets into a clean,
+// isolated source directory. This prevents Gradle's own build output folders
+// from being scanned as Python input files.
+def syncMosaicPython = tasks.register("syncMosaicPython", Sync) {
+    from("../../mosaic") {
+        include "*.py"
+        include "static/**"
+        into "mosaic"
+    }
+    into("../python-src")
+}
+
 chaquopy {
     defaultConfig {
         version = "3.13"
     }
-
-    // Use the existing repository package directly:
-    // ../../ is the mosaic/ project root and contains mosaic/__init__.py.
     sourceSets {
         main {
-            srcDir("../../")
+            srcDir("../python-src")
         }
+    }
+}
+
+// Chaquopy's source-merging task must run after the package sync task.
+tasks.configureEach {
+    if (name != "syncMosaicPython" && name.toLowerCase().contains("python")) {
+        dependsOn(syncMosaicPython)
     }
 }
