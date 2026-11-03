@@ -65,6 +65,9 @@ def make_handler(mo: Mosaic):
                 return self._send(200, (STATIC / "index.html").read_bytes(), "text/html; charset=utf-8")
             if path == "/app.js":
                 return self._send(200, (STATIC / "app.js").read_bytes(), "text/javascript; charset=utf-8")
+            if path == "/api/training/status":
+                from .training import training_status
+                return self._send(200, training_status(os.environ.get("MOSAIC_DB", "mosaic.db")))
             if path == "/api/provider/status":
                 local_url = os.environ.get("MOSAIC_LOCAL_BASE_URL", "").strip()
                 cloud_ready = bool(os.environ.get("MOSAIC_CLOUD_BASE_URL", "").strip()
@@ -195,6 +198,11 @@ def make_handler(mo: Mosaic):
                 if path == "/api/knowledge/forget":
                     from .knowledge import forget_file_knowledge
                     return self._send(200, {"deleted_chunks": forget_file_knowledge(db_path, str(b.get("file_id", "")))})
+                if path == "/api/training/prepare":
+                    from .training import export_consented_feedback
+                    data_dir = Path(db_path).expanduser().resolve().parent / "mosaic-training-data"
+                    result = export_consented_feedback(db_path, str(data_dir))
+                    return self._send(200, result)
                 if path == "/api/chat/feedback":
                     from .knowledge import save_chat_feedback
                     correction = str(b.get("correction", "")).strip()
