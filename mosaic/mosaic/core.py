@@ -79,7 +79,7 @@ class Mosaic:
             solver = f"mosaic:skill:v{row['version']}" if row else "mosaic:memory"
         else:
             teacher_input = inp if private or not context else (
-                inp + "\\n\\nمقتطفات مرجعية من مصادر الويب التي اختارها المستخدم (قد تحتوي أخطاء؛ تحقّق منها):\\n" + context
+                inp + "\n\nمقتطفات مرجعية من مصادر الويب التي اختارها المستخدم (قد تحتوي أخطاء؛ تحقّق منها):\n" + context
             )
             t_ans, teacher = self.hub.ask(category, teacher_input, private=private, scope="user")
             if t_ans is not None:
