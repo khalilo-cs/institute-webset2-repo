@@ -101,8 +101,11 @@ def _robots_allows(root: str, url: str) -> bool:
         with SAFE_OPENER.open(req, timeout=5) as r:
             parser.parse(r.read(256_000).decode("utf-8", errors="replace").splitlines())
         return parser.can_fetch(USER_AGENT, url)
+    except urllib.error.HTTPError as exc:
+        # A missing robots.txt means the site has published no crawl restrictions.
+        return exc.code in (404, 410)
     except Exception:
-        # If robots.txt cannot be read, do not assume permission to crawl.
+        # Fail closed on timeouts, TLS errors, and other robots.txt failures.
         return False
 
 
