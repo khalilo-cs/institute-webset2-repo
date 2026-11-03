@@ -71,6 +71,7 @@ textarea{resize:vertical}
   <button data-t="knowledge">التعلم من المواقع</button>
   <button data-t="phone">ملفات الهاتف</button>
   <button data-t="media">الصور والفيديو</button>
+  <button data-t="training">تدريب النموذج</button>
 </nav>
 <main>
   <section id="chat" class="on">
@@ -180,6 +181,27 @@ textarea{resize:vertical}
       <label>اسأل عن محتوى الملفات المختارة</label><textarea id="filequestion" rows="3" placeholder="لخص الملفات أو ابحث عن ..."></textarea>
       <button class="btn" id="fileask">استخراج مقتطفات للإجابة</button>
       <div id="fileoutput"></div>
+    </div>
+  </section>
+  <section id="training">
+    <div class="card">
+      <h3>تدريب MOSAIC محلياً باستخدام تصحيحاتك المصرّح بها</h3>
+      <p class="note">لا تُدرج المحادثات العادية أو الملفات أو صفحات الويب في التدريب. المصدر الوحيد هنا هو التصحيح الذي وافقت صراحةً على استخدامه في التدريب. تُجهّز البيانات على هذا الجهاز، ولا تُرفع تلقائياً.</p>
+      <div id="trainingstatus" class="note">جارٍ فحص بيانات التدريب…</div>
+      <button class="btn" id="trainingprepare">جهّز بيانات التدريب المصرّح بها</button>
+      <div id="trainingresult" class="note" aria-live="polite"></div>
+    </div>
+    <div class="card">
+      <h3>تشغيل التدريب على الكمبيوتر</h3>
+      <p>تجهيز البيانات لا يدرّب الأوزان. بعد تنزيل متطلبات التدريب والنموذج الأساسي، شغّل الأمر التالي من مجلد المشروع على Windows أو Linux. سيُنتج محوّل LoRA، ثم يقارن خسارة الاختبار المستقل قبل التدريب وبعده.</p>
+      <pre id="trainingcommand">اضغط «جهّز بيانات التدريب» أولاً لعرض المسارات الصحيحة.</pre>
+      <div class="row"><button class="btn alt" id="trainingcopy" disabled>نسخ أوامر التدريب</button></div>
+      <p class="note">هذا المسار غير متاح للتنفيذ داخل APK؛ هاتف Android يمكنه تجهيز البيانات، أما التدريب فيحتاج بيئة Python/PyTorch على الكمبيوتر أو خادم GPU. لا يُفعّل المحوّل تلقائياً حتى لو اجتاز فحص الاختبار.</p>
+    </div>
+    <div class="card">
+      <h3>تشغيل المحوّل المدرّب مع MOSAIC</h3>
+      <pre id="trainingserve">بعد التدريب ستظهر هنا طريقة تشغيل المحوّل المحلي.</pre>
+      <p class="note">خادم النموذج النصي يعمل على 127.0.0.1 فقط افتراضياً. لا تعرّضه للإنترنت.</p>
     </div>
   </section>
   <section id="media">
