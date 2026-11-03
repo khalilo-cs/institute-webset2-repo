@@ -5,7 +5,7 @@ from pathlib import Path
 
 from mosaic.workspace import (
     add_message, create_conversation, delete_conversation, get_conversation,
-    list_conversations, list_files, search_conversations, store_file,
+    build_attachment_content, list_conversations, list_files, search_conversations, store_file,
 )
 
 
@@ -44,6 +44,20 @@ class WorkspaceTests(unittest.TestCase):
         item = store_file(self.db, "notes.txt", base64.b64encode(raw).decode(), self.chat["id"])
         self.assertEqual(item["parser"], "utf8-text")
         self.assertGreater(item["extracted_characters"], 10)
+
+
+    def test_image_attachment_becomes_multimodal_data_url(self):
+        raw = b"fake-png-bytes"
+        item = store_file(self.db, "diagram.png", base64.b64encode(raw).decode(), self.chat["id"])
+        blocks = build_attachment_content(self.db, [item["id"]])
+        self.assertEqual(blocks[0]["type"], "image_url")
+        self.assertTrue(blocks[0]["image_url"]["url"].startswith("data:image/png;base64,"))
+        self.assertEqual(blocks[1]["type"], "text")
+
+    def test_unknown_binary_is_not_forwarded_to_model(self):
+        raw = b"opaque bytes"
+        item = store_file(self.db, "payload.unknown", base64.b64encode(raw).decode(), self.chat["id"])
+        self.assertEqual(build_attachment_content(self.db, [item["id"]]), [])
 
     def test_conversation_delete_removes_history(self):
         add_message(self.db, self.chat["id"], "user", "delete me")
