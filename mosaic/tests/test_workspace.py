@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 
 from mosaic.workspace import (
-    add_message, create_conversation, delete_conversation, get_conversation,
+    add_message, archive_conversation, create_conversation, delete_conversation, get_conversation,
     build_attachment_content, list_conversations, list_files, search_conversations, store_file,
 )
 
@@ -24,6 +24,14 @@ class WorkspaceTests(unittest.TestCase):
         item = get_conversation(self.db, self.chat["id"])
         self.assertEqual(item["title"], "مرحبا MOSAIC")
         self.assertEqual([m["role"] for m in item["messages"]], ["user", "assistant"])
+        self.assertEqual(len(list_conversations(self.db)), 1)
+
+
+    def test_archive_and_restore_conversation(self):
+        self.assertTrue(archive_conversation(self.db, self.chat["id"], True))
+        self.assertEqual(len(list_conversations(self.db)), 0)
+        self.assertEqual(len(list_conversations(self.db, include_archived=True)), 1)
+        self.assertTrue(archive_conversation(self.db, self.chat["id"], False))
         self.assertEqual(len(list_conversations(self.db)), 1)
 
     def test_searches_conversation_messages(self):
