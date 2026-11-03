@@ -196,7 +196,8 @@ def knowledge_stats(db_path: str) -> dict:
         con.close()
 
 
-def save_chat_feedback(db_path: str, message_id: str, rating: str, correction: str = "") -> dict:
+def save_chat_feedback(db_path: str, message_id: str, rating: str, correction: str = "",
+                       allow_training: bool = False) -> dict:
     """Persist explicit chat feedback; only user-written corrections enter searchable knowledge."""
     from datetime import datetime, timezone
     from .workspace import _connect as workspace_connect
@@ -222,12 +223,18 @@ def save_chat_feedback(db_path: str, message_id: str, rating: str, correction: s
     try:
         con.execute("""CREATE TABLE IF NOT EXISTS chat_feedback(
             message_id TEXT PRIMARY KEY, rating TEXT NOT NULL,
-            correction TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL)""")
+            correction TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL,
+            allow_training INTEGER NOT NULL DEFAULT 0)""")
+        feedback_columns = {row["name"] for row in con.execute("PRAGMA table_info(chat_feedback)")}
+        if "allow_training" not in feedback_columns:
+            con.execute("ALTER TABLE chat_feedback ADD COLUMN allow_training INTEGER NOT NULL DEFAULT 0")
+        opted_in = bool(allow_training and rating == "not_accurate" and correction)
         con.execute(
-            "INSERT INTO chat_feedback(message_id,rating,correction,created_at) VALUES(?,?,?,?) "
+            "INSERT INTO chat_feedback(message_id,rating,correction,created_at,allow_training) VALUES(?,?,?,?,?) "
             "ON CONFLICT(message_id) DO UPDATE SET rating=excluded.rating,"
-            "correction=excluded.correction,created_at=excluded.created_at",
-            (message_id, rating, correction, now))
+            "correction=excluded.correction,created_at=excluded.created_at,"
+            "allow_training=excluded.allow_training",
+            (message_id, rating, correction, now, int(opted_in)))
         if correction:
             digest = hashlib.sha256(correction.encode("utf-8")).hexdigest()
             con.execute("DELETE FROM knowledge_chunks WHERE file_id=?", (feedback_id,))
@@ -241,4 +248,5 @@ def save_chat_feedback(db_path: str, message_id: str, rating: str, correction: s
         con.commit()
     finally:
         con.close()
-    return {"ok": True, "rating": rating, "correction_indexed": bool(correction)}
+    return {"ok": True, "rating": rating, "correction_indexed": bool(correction),
+            "allow_training": opted_in}
