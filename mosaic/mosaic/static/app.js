@@ -553,9 +553,11 @@ $("trainingprepare").onclick = async () => {
   $("trainingresult").textContent = "جارٍ تجهيز التصحيحات التي منحتها إذناً للتدريب فقط…";
   try {
     const r = await api("/api/training/prepare", {});
+    const readyToTrain = r.train_examples >= 6 && r.eval_examples >= 2;
     $("trainingresult").textContent =
       "تم تجهيز " + r.total_examples + " مثالاً: " + r.train_examples +
-      " للتدريب و" + r.eval_examples + " للاختبار المستقل. المسار: " + r.output_dir;
+      " للتدريب و" + r.eval_examples + " للاختبار المستقل. المسار: " + r.output_dir +
+      (readyToTrain ? "" : " · لا تكفي البيانات بعد؛ يلزم 6 أمثلة تدريب ومثالان مستقلان على الأقل.") ;
     $("trainingdownload").disabled = false;
     const selectedModel = $("trainingmodel").value.trim() || "Qwen/Qwen2.5-0.5B-Instruct";
     mosaicTrainingCommands =
@@ -575,7 +577,7 @@ $("trainingprepare").onclick = async () => {
       "\n\n# Terminal 2: set these before starting MOSAIC\n" +
       '$env:MOSAIC_LOCAL_BASE_URL="http://127.0.0.1:8766/v1"\n' +
       '$env:MOSAIC_LOCAL_MODEL="mosaic-local"';
-    $("trainingcopy").disabled = false;
+    $("trainingcopy").disabled = !readyToTrain;
     await loadTrainingStatus();
   } catch (e) {
     $("trainingresult").textContent = "تعذر تجهيز بيانات التدريب: " + e.message;
