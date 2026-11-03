@@ -65,8 +65,12 @@ def make_handler(mo: Mosaic):
             if path == "/api/conversations":
                 from .workspace import list_conversations, search_conversations
                 db_path = os.environ.get("MOSAIC_DB", "mosaic.db")
-                query = parse_qs(parsed.query).get("q", [""])[0]
-                items = search_conversations(db_path, query) if query else list_conversations(db_path)
+                params = parse_qs(parsed.query)
+                query = params.get("q", [""])[0]
+                archived = params.get("archived", ["0"])[0] == "1"
+                items = (list_conversations(db_path, include_archived=True) if archived
+                         else search_conversations(db_path, query) if query
+                         else list_conversations(db_path))
                 return self._send(200, {"conversations": items})
             if path.startswith("/api/conversations/"):
                 from .workspace import get_conversation
