@@ -207,8 +207,6 @@ def make_handler(mo: Mosaic):
                     from .workspace import build_attachment_content
                     attachments = build_attachment_content(db_path, b.get("file_ids", []))
                     history = conversation["messages"][-12:]
-                    context_text = "\n\n".join(evidence)
-                    user_content = compose_chat_user_content(prompt, attachments, context_text)
                     add_message(db_path, cid, "user", prompt, {"file_ids": b.get("file_ids", [])})
                     is_private = bool(b.get("private", False))
                     web_knowledge = []
@@ -226,6 +224,8 @@ def make_handler(mo: Mosaic):
                     if web_knowledge:
                         evidence.append("مراجع ويب مسترجعة (غير موثوقة وتحتاج تحققاً):\n" +
                                         "\n\n".join("[مصدر: " + x["title"] + " | " + x["url"] + "]\n" + x["excerpt"] for x in web_knowledge))
+                    context_text = "\n\n".join(evidence)
+                    user_content = compose_chat_user_content(prompt, attachments, context_text)
                     from .providers import chat_completion, ProviderUnavailable
                     try:
                         answer, provider = chat_completion(
