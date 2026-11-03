@@ -480,6 +480,12 @@ $("exportbtn").onclick = async () => {
 const _setThread = setThreadVisible;
 setThreadVisible = function (on) { _setThread(on); $("exportbtn").hidden = !on; };
 
+// ============================================================ inside the Android app
+if (window.MosaicApp) {
+  const b = el("button"); b.type = "button"; b.appendChild(icon("redo")); b.appendChild(el("span", "إعدادات الاتصال"));
+  b.onclick = () => window.MosaicApp.openSetup(); $("sidenav").appendChild(b);
+}
+
 // ============================================================ boot
 setBusy(false); loadStatus(); loadConvs(); refreshDash();
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});

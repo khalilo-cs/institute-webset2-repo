@@ -29,6 +29,16 @@ ollama pull qwen2.5:3b
 python -m mosaic serve --llm openai_compat --model qwen2.5:3b
 ```
 
+## تطبيق Android (APK)
+
+الملف الجاهز: `android/dist/MOSAIC.apk`. يعمل على Android 6 فما فوق.
+
+التطبيق واجهة أصلية (أيقونة على الشاشة الرئيسية، وإرفاق ملفات من الجوال، وزر الرجوع) تعرض واجهة MOSAIC. **نواة التعلم المكتوبة بـ Python تعمل كخادم** إما:
+- على نفس الجوال عبر Termux (التطبيق يعرض الأوامر بزر نسخ)، أو
+- على حاسوب في شبكة بيتك: `python -m mosaic serve --host 0.0.0.0`، ثم تكتب عنوانه في التطبيق. لا يوجد تسجيل دخول بعد، فاستخدم ذلك على شبكة موثوقة فقط.
+
+إعادة البناء: `android/build.sh` (يحتاج حزم Ubuntu: `aapt apksigner zipalign dalvik-exchange android-sdk-platform-23`).
+
 ## التشغيل
 
 لا يحتاج إلى أي مكتبات خارجية. يكفي Python 3.10 أو أحدث.
