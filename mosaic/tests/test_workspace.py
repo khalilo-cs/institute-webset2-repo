@@ -5,7 +5,7 @@ from pathlib import Path
 
 from mosaic.workspace import (
     add_message, create_conversation, delete_conversation, get_conversation,
-    list_conversations, list_files, store_file,
+    list_conversations, list_files, search_conversations, store_file,
 )
 
 
@@ -25,6 +25,11 @@ class WorkspaceTests(unittest.TestCase):
         self.assertEqual(item["title"], "مرحبا MOSAIC")
         self.assertEqual([m["role"] for m in item["messages"]], ["user", "assistant"])
         self.assertEqual(len(list_conversations(self.db)), 1)
+
+    def test_searches_conversation_messages(self):
+        add_message(self.db, self.chat["id"], "user", "Find my database notes")
+        self.assertEqual(len(search_conversations(self.db, "database")), 1)
+        self.assertEqual(len(search_conversations(self.db, "not-present")), 0)
 
     def test_accepts_unknown_binary_extension_without_execution(self):
         raw = b"\x00\x01not-an-executable-payload"
