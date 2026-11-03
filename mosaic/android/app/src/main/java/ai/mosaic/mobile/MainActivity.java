@@ -39,6 +39,7 @@ public final class MainActivity extends Activity {
     private final ExecutorService io = Executors.newSingleThreadExecutor();
     private WebView webView;
     private TextView statusText;
+    private LinearLayout statusPanel;
     private ProgressBar progress;
     private String baseUrl;
 
@@ -87,7 +88,7 @@ public final class MainActivity extends Activity {
             }
         });
 
-        LinearLayout statusPanel = new LinearLayout(this);
+        statusPanel = new LinearLayout(this);
         statusPanel.setOrientation(LinearLayout.VERTICAL);
         statusPanel.setGravity(Gravity.CENTER);
         statusPanel.setPadding(32, 32, 32, 32);
@@ -136,7 +137,7 @@ public final class MainActivity extends Activity {
                 baseUrl = "http://127.0.0.1:" + port;
 
                 runOnUiThread(() -> {
-                    statusText.setText("تم تشغيل MOSAIC");
+                    statusPanel.setVisibility(View.GONE);
                     progress.setVisibility(View.GONE);
                     webView.setVisibility(View.VISIBLE);
                     webView.loadUrl(baseUrl + "/");
