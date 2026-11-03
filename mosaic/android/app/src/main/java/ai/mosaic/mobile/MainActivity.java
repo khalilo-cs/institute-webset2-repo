@@ -14,6 +14,8 @@ import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
 import android.content.pm.PackageManager;
+import android.app.DownloadManager;
+import android.os.Environment;
 import android.Manifest;
 import android.webkit.JavascriptInterface;
 import android.net.Uri;
@@ -111,6 +113,29 @@ public final class MainActivity extends Activity {
                     fileCallback = null;
                     return false;
                 }
+            }
+        });
+
+        webView.setDownloadListener((url, userAgent, contentDisposition, mimeType, contentLength) -> {
+            try {
+                DownloadManager manager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+                if (manager == null) {
+                    statusText.setText("تعذر بدء تنزيل الملف على هذا الجهاز.");
+                    return;
+                }
+                String filename = (mimeType != null && mimeType.equals("application/zip"))
+                        ? "mosaic-training-data.zip" : "mosaic-download.bin";
+                DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+                request.setTitle(filename);
+                request.setDescription("تنزيل ملف من MOSAIC");
+                request.setMimeType(mimeType == null ? "application/octet-stream" : mimeType);
+                request.addRequestHeader("User-Agent", userAgent == null ? "MOSAIC" : userAgent);
+                request.setNotificationVisibility(
+                        DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+                request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, filename);
+                manager.enqueue(request);
+            } catch (Exception error) {
+                statusText.setText("تعذر تنزيل الملف: " + error.getMessage());
             }
         });
 
