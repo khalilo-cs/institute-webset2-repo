@@ -76,8 +76,24 @@ def make_handler(mo: Mosaic):
                     db_path = str(Path(os.environ.get("MOSAIC_DB", "mosaic.db")).with_name("mosaic_web_knowledge.sqlite"))
                     return self._send(200, {"results": search_knowledge(str(b.get("query", "")), db_path)})
                 if path == "/api/task":
-                    return self._send(200, mo.solve(str(b["category"]), str(b["input"]),
-                                                    private=bool(b.get("private", False))))
+                    user_input = str(b["input"])
+                    is_private = bool(b.get("private", False))
+                    knowledge = []
+                    if not is_private:
+                        from .web_learning import search_knowledge
+                        db_path = str(Path(os.environ.get("MOSAIC_DB", "mosaic.db")).with_name("mosaic_web_knowledge.sqlite"))
+                        knowledge = search_knowledge(user_input, db_path, limit=3)
+                    context = "\\n\\n".join(
+                        f"المصدر: {item['title']} ({item['url']})\\n{item['excerpt']}"
+                        for item in knowledge
+                    )
+                    result = mo.solve(str(b["category"]), user_input,
+                                      private=is_private, context=context)
+                    result["knowledge_sources"] = [
+                        {"title": item["title"], "url": item["url"], "score": item["score"]}
+                        for item in knowledge
+                    ]
+                    return self._send(200, result)
                 if path == "/api/feedback":
                     return self._send(200, mo.feedback(str(b["episode_id"]), str(b["kind"]),
                                                        b.get("correct_answer"), str(b.get("note", ""))))
