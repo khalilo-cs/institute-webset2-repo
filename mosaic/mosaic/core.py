@@ -535,7 +535,17 @@ class Mosaic:
                      self.m.q("SELECT 1 FROM skills WHERE category=? AND status='rolled_back'", (c["name"],))]
         total_tasks = sum(c["total_tasks"] for c in cats) or 0
         total_teacher = sum(c["teacher_calls"] for c in cats)
+        # learning timeline: who answered each block of tasks (teacher vs MOSAIC)
+        eps = self.m.q("SELECT solver FROM episodes ORDER BY created_at, rowid")
+        size = max(5, len(eps) // 24) if eps else 5
+        timeline = []
+        for i in range(0, len(eps), size):
+            block = eps[i:i + size]
+            timeline.append({"tasks": i + len(block),
+                             "teacher": sum(e["solver"].startswith("teacher:") for e in block) / len(block),
+                             "mosaic": sum(e["solver"].startswith("mosaic") for e in block) / len(block)})
         return {
+            "timeline": timeline,
             "summary": {
                 "categories": len(cats), "graduated": sum(c["graduated"] for c in cats),
                 "active_skills": sum(1 for c in cats if c["active_skill"]),

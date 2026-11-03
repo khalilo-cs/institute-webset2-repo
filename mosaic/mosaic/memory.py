@@ -101,7 +101,7 @@ CREATE TABLE IF NOT EXISTS conversations (
 );
 CREATE TABLE IF NOT EXISTS messages (
   id TEXT PRIMARY KEY, conv_id TEXT NOT NULL, role TEXT NOT NULL, content TEXT NOT NULL,
-  source TEXT, rating INTEGER, created_at REAL NOT NULL
+  source TEXT, rating INTEGER, created_at REAL NOT NULL, attachments TEXT
 );
 CREATE INDEX IF NOT EXISTS ix_msg_conv ON messages(conv_id, created_at);
 CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
@@ -128,6 +128,7 @@ DEFAULT_SETTINGS = {
     "llm_base_url": "http://127.0.0.1:11434/v1",
     "allow_cloud_llm": True,        # False = only local models may see conversations
     "memory_answer_threshold": 0.9,
+    "custom_instructions": "",
 }
 
 
@@ -138,6 +139,10 @@ class Memory:
         self.db = sqlite3.connect(path, check_same_thread=False)
         self.db.row_factory = sqlite3.Row
         self.db.executescript(SCHEMA)
+        try:  # migrate databases created before attachments existed
+            self.db.execute("ALTER TABLE messages ADD COLUMN attachments TEXT")
+        except sqlite3.OperationalError:
+            pass
         for k, v in DEFAULT_SETTINGS.items():
             self.db.execute("INSERT OR IGNORE INTO settings VALUES (?, ?)", (k, json.dumps(v)))
         self.db.commit()

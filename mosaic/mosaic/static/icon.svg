@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="MOSAIC">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1d2b4f"/>
+      <stop offset="1" stop-color="#0e1526"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <!-- mosaic tiles that build an "M": many small skills forming one mind -->
+  <g transform="translate(96 112)">
+    <rect x="0"   y="0"   width="72" height="72" rx="16" fill="#3987e5"/>
+    <rect x="248" y="0"   width="72" height="72" rx="16" fill="#3987e5"/>
+    <rect x="0"   y="96"  width="72" height="72" rx="16" fill="#4fa0f0"/>
+    <rect x="82"  y="62"  width="72" height="72" rx="16" fill="#eb6834" transform="rotate(8 118 98)"/>
+    <rect x="166" y="62"  width="72" height="72" rx="16" fill="#1baf7a" transform="rotate(-8 202 98)"/>
+    <rect x="248" y="96"  width="72" height="72" rx="16" fill="#4fa0f0"/>
+    <rect x="0"   y="192" width="72" height="72" rx="16" fill="#6aa9f2"/>
+    <rect x="124" y="160" width="72" height="72" rx="16" fill="#eda100"/>
+    <rect x="248" y="192" width="72" height="72" rx="16" fill="#6aa9f2"/>
+  </g>
+</svg>

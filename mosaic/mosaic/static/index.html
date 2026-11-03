@@ -2,146 +2,303 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1d2b4f">
 <title>MOSAIC</title>
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="manifest" href="/manifest.webmanifest">
 <style>
-:root{--bg:#f6f7f9;--card:#fff;--text:#1b1f24;--muted:#5f6b7a;--line:#e3e7ec;--accent:#2f6fde;--ok:#1f8a4c;--warn:#b26a00;--bad:#c23a3a;--chip:#eef2f8}
-@media (prefers-color-scheme:dark){:root{--bg:#111418;--card:#1a1f25;--text:#e8ecf1;--muted:#9aa6b5;--line:#2a313a;--accent:#6aa0ff;--ok:#4cc28a;--warn:#e0a24a;--bad:#ef7070;--chip:#232a33}}
+:root{
+  --bg:#faf9f6;--side:#f2f0eb;--card:#ffffff;--text:#1c1b19;--muted:#6b6862;--line:#e4e1da;
+  --accent:#2f6fde;--accent-ink:#fff;--user:#efece5;--chip:#ebe8e1;--code:#f4f2ee;
+  --ok:#1f8a4c;--warn:#a86400;--bad:#c23a3a;
+  --series-1:#2a78d6;--series-2:#eb6834;--grid:#e6e3dc;--axis:#6b6862;
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 4px 16px rgba(0,0,0,.06);
+}
+@media (prefers-color-scheme:dark){:root:where(:not([data-theme="light"])){
+  --bg:#1a1a19;--side:#141413;--card:#232321;--text:#f0efec;--muted:#a9a69e;--line:#34332f;
+  --accent:#6aa0ff;--accent-ink:#0b1220;--user:#2c2b28;--chip:#2f2e2b;--code:#1f1f1d;
+  --ok:#4cc28a;--warn:#e0a24a;--bad:#ef7070;
+  --series-1:#3987e5;--series-2:#d95926;--grid:#33322e;--axis:#a9a69e;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.35);
+}}
+:root[data-theme="dark"]{
+  --bg:#1a1a19;--side:#141413;--card:#232321;--text:#f0efec;--muted:#a9a69e;--line:#34332f;
+  --accent:#6aa0ff;--accent-ink:#0b1220;--user:#2c2b28;--chip:#2f2e2b;--code:#1f1f1d;
+  --ok:#4cc28a;--warn:#e0a24a;--bad:#ef7070;
+  --series-1:#3987e5;--series-2:#d95926;--grid:#33322e;--axis:#a9a69e;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.35);
+}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif}
-header{padding:14px 16px;border-bottom:1px solid var(--line);background:var(--card);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-header h1{margin:0;font-size:20px;letter-spacing:.5px}
-header .sub{color:var(--muted);font-size:13px}
-nav{display:flex;gap:6px;flex-wrap:wrap;padding:10px 16px}
-nav button{border:1px solid var(--line);background:var(--card);color:var(--text);padding:6px 12px;border-radius:8px;cursor:pointer}
-nav button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
-main{padding:0 16px 40px;max-width:1100px;margin:0 auto}
-section{display:none}section.on{display:block}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin:12px 0}
+[hidden]{display:none !important}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.7 system-ui,-apple-system,"Segoe UI","Noto Sans Arabic",Tahoma,sans-serif}
+button{font:inherit;color:inherit}
+.app{display:grid;grid-template-columns:280px 1fr;height:100vh;height:100dvh}
+/* ---------- sidebar ---------- */
+#sidebar{background:var(--side);border-inline-end:1px solid var(--line);display:flex;flex-direction:column;min-height:0;padding:12px}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 6px 12px}
+.brand img{width:32px;height:32px}
+.brand b{font-size:18px;letter-spacing:.5px}
+.newchat{display:flex;align-items:center;gap:8px;width:100%;padding:9px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);cursor:pointer;box-shadow:var(--shadow)}
+.newchat:hover{border-color:var(--accent)}
+.search{margin:10px 0 6px}
+.search input{width:100%;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text);font:inherit;font-size:14px}
+#convlist{flex:1;overflow-y:auto;min-height:0;margin:4px -4px}
+.group{font-size:12px;color:var(--muted);padding:10px 10px 4px}
+.conv{display:flex;align-items:center;gap:4px;padding:7px 10px;border-radius:8px;cursor:pointer;font-size:14px}
+.conv:hover,.conv.on{background:var(--chip)}
+.conv span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.conv .act{visibility:hidden;background:none;border:0;cursor:pointer;color:var(--muted);padding:0 4px;border-radius:4px}
+.conv:hover .act,.conv.on .act{visibility:visible}
+.conv .act:hover{color:var(--text);background:var(--line)}
+.sidenav{border-top:1px solid var(--line);padding-top:8px;display:flex;flex-direction:column;gap:2px}
+.sidenav button{display:flex;align-items:center;gap:10px;background:none;border:0;padding:7px 10px;border-radius:8px;cursor:pointer;text-align:start;font-size:14px}
+.sidenav button:hover,.sidenav button.on{background:var(--chip)}
+.sidenav svg,.icon{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+/* ---------- main ---------- */
+main{display:flex;flex-direction:column;min-width:0;min-height:0}
+.topbar{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid transparent}
+.topbar .menu{display:none;background:none;border:0;cursor:pointer;padding:6px}
+.modelpick{display:flex;align-items:center;gap:6px;background:none;border:1px solid transparent;border-radius:10px;padding:4px 8px}
+.modelpick:hover{border-color:var(--line)}
+.modelpick select{border:0;background:transparent;color:var(--text);font:inherit;font-weight:600;cursor:pointer;max-width:58vw}
+.status{font-size:12px;color:var(--muted)}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;background:var(--muted)}
+.dot.on{background:var(--ok)}
+.view{display:none;flex:1;min-height:0;overflow-y:auto}
+.view.on{display:flex;flex-direction:column}
+.col{width:100%;max-width:780px;margin:0 auto;padding:0 16px}
+/* ---------- welcome ---------- */
+#welcome{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px 16px}
+#welcome img{width:64px;height:64px;margin-bottom:12px}
+#welcome h1{font-size:28px;font-weight:600;margin:0 0 6px}
+#welcome p{color:var(--muted);margin:0 0 20px}
+.suggest{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;max-width:640px;width:100%}
+.suggest button{text-align:start;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--card);cursor:pointer;font-size:14px;line-height:1.5}
+.suggest button:hover{border-color:var(--accent)}
+.suggest b{display:block;font-size:14px}
+.suggest span{color:var(--muted)}
+/* ---------- thread ---------- */
+#thread{flex:1;padding:16px 0 8px}
+.turn{margin:0 0 22px}
+.turn.user{display:flex;justify-content:flex-start}
+.bubble{background:var(--user);padding:10px 16px;border-radius:18px;max-width:85%;white-space:pre-wrap;overflow-wrap:anywhere}
+.turn.user .tools{opacity:0;transition:opacity .15s;align-self:center}
+.turn.user:hover .tools{opacity:1}
+.atts{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.atts img{max-width:180px;max-height:140px;border-radius:10px;border:1px solid var(--line)}
+.file{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:8px;background:var(--card);border:1px solid var(--line);font-size:13px}
+.assistant .who{display:flex;align-items:center;gap:8px;margin-bottom:4px;font-weight:600;font-size:14px}
+.assistant .who img{width:22px;height:22px}
+.md{overflow-wrap:anywhere}
+.md p{margin:0 0 10px}
+.md h1,.md h2,.md h3{margin:14px 0 6px;line-height:1.4}
+.md h1{font-size:20px}.md h2{font-size:18px}.md h3{font-size:16px}
+.md ul,.md ol{margin:0 0 10px;padding-inline-start:22px}
+.md li{margin:2px 0}
+.md blockquote{margin:0 0 10px;padding:4px 12px;border-inline-start:3px solid var(--line);color:var(--muted)}
+.md code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.88em;background:var(--code);padding:1px 5px;border-radius:5px}
+.md table{border-collapse:collapse;margin:0 0 10px;display:block;overflow-x:auto}
+.md th,.md td{border:1px solid var(--line);padding:5px 9px}
+.codeblock{margin:0 0 12px;border:1px solid var(--line);border-radius:10px;overflow:hidden;direction:ltr}
+.codeblock .cbar{display:flex;justify-content:space-between;align-items:center;padding:4px 10px;background:var(--chip);font-size:12px;color:var(--muted)}
+.codeblock .cbar button{background:none;border:0;cursor:pointer;color:var(--muted);font-size:12px}
+.codeblock pre{margin:0;padding:12px;overflow-x:auto;background:var(--code);text-align:left}
+.codeblock code{background:none;padding:0;font-size:13px}
+.msgtools{display:flex;gap:2px;align-items:center;margin-top:6px;color:var(--muted);flex-wrap:wrap}
+.msgtools button{background:none;border:0;cursor:pointer;padding:5px;border-radius:6px;color:var(--muted);display:inline-flex}
+.msgtools button:hover{background:var(--chip);color:var(--text)}
+.msgtools button.done{color:var(--ok)}
+.src{font-size:12px;margin-inline-start:6px}
+.cursor::after{content:"▍";animation:blink 1s steps(1) infinite;color:var(--accent)}
+@keyframes blink{50%{opacity:0}}
+.thinking{display:flex;gap:5px;padding:8px 0}
+.thinking i{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:pulse 1.2s infinite ease-in-out}
+.thinking i:nth-child(2){animation-delay:.15s}.thinking i:nth-child(3){animation-delay:.3s}
+@keyframes pulse{0%,80%,100%{opacity:.25;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+.editbox textarea{width:100%;min-height:80px;padding:10px;border-radius:12px;border:1px solid var(--accent);background:var(--card);color:var(--text);font:inherit}
+/* ---------- composer ---------- */
+.composer-wrap{padding:8px 0 14px;background:linear-gradient(transparent,var(--bg) 30%)}
+.composer{border:1px solid var(--line);background:var(--card);border-radius:20px;box-shadow:var(--shadow);padding:10px 12px}
+.composer:focus-within{border-color:var(--accent)}
+.composer textarea{width:100%;border:0;outline:0;resize:none;background:transparent;color:var(--text);font:inherit;max-height:220px;min-height:28px}
+.composer .row{display:flex;align-items:center;gap:6px}
+.composer .grow{flex:1}
+.iconbtn{background:none;border:1px solid var(--line);border-radius:10px;width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted)}
+.iconbtn:hover{color:var(--text);border-color:var(--muted)}
+.sendbtn{background:var(--accent);color:var(--accent-ink);border:0}
+.sendbtn:hover{color:var(--accent-ink);filter:brightness(1.08)}
+.iconbtn.rec{color:#fff;background:var(--bad);border-color:var(--bad)}
+.sendbtn:disabled{opacity:.4;cursor:default}
+#pending-atts{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+#pending-atts:empty{display:none}
+.patt{position:relative;display:inline-flex;align-items:center;gap:6px;padding:4px 26px 4px 8px;border:1px solid var(--line);border-radius:10px;font-size:13px;background:var(--bg)}
+.patt img{width:36px;height:36px;object-fit:cover;border-radius:6px}
+.patt button{position:absolute;top:2px;left:4px;background:none;border:0;cursor:pointer;color:var(--muted)}
+.disclaimer{text-align:center;font-size:12px;color:var(--muted);margin-top:6px}
+/* ---------- panels (dashboard etc.) ---------- */
+.panel{padding:16px 0 40px}
+.panel h2{font-size:22px;margin:4px 0 12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:12px 0}
+.card h3{margin:0 0 8px;font-size:16px}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
-.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px}
-.kpi b{display:block;font-size:24px}.kpi span{color:var(--muted);font-size:13px}
-table{width:100%;border-collapse:collapse;font-size:14px}
-th,td{text-align:start;padding:7px 6px;border-bottom:1px solid var(--line);vertical-align:top}
-th{color:var(--muted);font-weight:600}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.kpi b{display:block;font-size:26px;line-height:1.2}
+.kpi span{color:var(--muted);font-size:13px}
+table.t{width:100%;border-collapse:collapse;font-size:14px}
+table.t th,table.t td{text-align:start;padding:7px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+table.t th{color:var(--muted);font-weight:600}
 .tw{overflow-x:auto}
-.chip{display:inline-block;padding:1px 8px;border-radius:999px;background:var(--chip);font-size:12px}
+.chip{display:inline-block;padding:1px 9px;border-radius:999px;background:var(--chip);font-size:12px;white-space:nowrap}
 .ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}.muted{color:var(--muted)}
-input,select,textarea{width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);font:inherit}
-label{display:block;margin:8px 0 4px;color:var(--muted);font-size:13px}
-.btn{border:0;background:var(--accent);color:#fff;padding:8px 14px;border-radius:8px;cursor:pointer;font:inherit;margin-top:8px}
-.btn.alt{background:var(--chip);color:var(--text)}.btn.bad{background:var(--bad)}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.bar{height:8px;background:var(--chip);border-radius:4px;overflow:hidden;min-width:80px}
-.bar i{display:block;height:100%;background:var(--ok)}
-pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);padding:10px;border-radius:8px;font-size:13px}
+input.f,select.f,textarea.f{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--text);font:inherit}
+label.l{display:block;margin:10px 0 4px;color:var(--muted);font-size:13px}
+.btn{border:0;background:var(--accent);color:var(--accent-ink);padding:8px 16px;border-radius:10px;cursor:pointer;font:inherit;margin-top:8px}
+.btn.alt{background:var(--chip);color:var(--text)}.btn.bad{background:var(--bad);color:#fff}
+.btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.bar{height:8px;background:var(--chip);border-radius:4px;overflow:hidden;min-width:70px}
+.bar i{display:block;height:100%;background:var(--series-1);border-radius:0 4px 4px 0}
+.barrow{display:flex;gap:8px;align-items:center}
+pre.box{white-space:pre-wrap;word-break:break-word;background:var(--code);padding:10px;border-radius:8px;font-size:13px;direction:ltr;text-align:left}
 .note{font-size:13px;color:var(--muted)}
-.chatwrap{display:grid;grid-template-columns:260px 1fr;gap:12px;margin-top:4px}
-@media (max-width:760px){.chatwrap{grid-template-columns:1fr}.convs{order:2}}
-.convs .item{padding:8px;border-radius:8px;cursor:pointer;display:flex;justify-content:space-between;gap:6px;border:1px solid transparent}
-.convs .item:hover,.convs .item.on{background:var(--card);border-color:var(--line)}
-.convs .item span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.convs .x{background:none;border:0;color:var(--muted);cursor:pointer}
-.chatmain{display:flex;flex-direction:column;min-height:70vh}
-#msgs{flex:1;display:flex;flex-direction:column;gap:10px;padding:8px 0}
-.msg{max-width:92%;padding:10px 14px;border-radius:14px;border:1px solid var(--line);background:var(--card);overflow-wrap:anywhere}
-.msg.user{align-self:flex-start;background:var(--accent);color:#fff;border-color:var(--accent)}
-.msg.assistant{align-self:flex-end}
-.msg .src{font-size:12px;color:var(--muted);margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.msg .src button{background:none;border:1px solid var(--line);border-radius:6px;color:var(--text);cursor:pointer;padding:0 6px}
-.msg pre{direction:ltr;text-align:left;overflow-x:auto}
-.msg code{font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--bg);padding:0 4px;border-radius:4px}
-.msg h1,.msg h2,.msg h3{font-size:16px;margin:8px 0 4px}
-.msg ul,.msg ol{margin:4px 0;padding-inline-start:20px}
-.msg p{margin:4px 0}
-#composer{display:flex;gap:8px;align-items:flex-end;position:sticky;bottom:0;background:var(--bg);padding:8px 0}
-#composer textarea{resize:vertical;min-height:44px}
-#composer .btn{margin:0}
-.typing{opacity:.6}
-.mem{font-size:13px}.mem .row{justify-content:space-between}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-bottom:4px}
+.legend i{display:inline-block;width:12px;height:3px;border-radius:2px;vertical-align:middle;margin-inline-end:6px}
+/* charts */
+.viz{position:relative;direction:ltr}
+.viz-grid{stroke:var(--grid);stroke-width:1}
+.viz-axis{fill:var(--axis);font-size:12px}
+.viz-label{fill:var(--text);font-size:12px;font-weight:600}
+.viz-cross{stroke:var(--muted);stroke-width:1;stroke-dasharray:3 3}
+.viz-tip{position:absolute;pointer-events:none;background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:8px;padding:6px 10px;font-size:12px;min-width:120px;direction:rtl;z-index:5}
+.viz-tip-row{display:flex;gap:8px;align-items:center;justify-content:space-between}
+.viz-tip-row i{width:10px;height:10px;border-radius:2px;display:inline-block}
+.viz-tip-row span{color:var(--muted);flex:1}
+/* ---------- mobile ---------- */
+.scrim{display:none}
+@media (max-width:820px){
+  .app{grid-template-columns:1fr}
+  #sidebar{position:fixed;inset-block:0;inset-inline-start:0;width:84vw;max-width:320px;z-index:20;transform:translateX(100%);transition:transform .2s;box-shadow:var(--shadow)}
+  .app.open #sidebar{transform:none}
+  .app.open .scrim{display:block;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:10}
+  .topbar .menu{display:inline-flex}
+  .suggest{grid-template-columns:1fr}
+  .bubble{max-width:92%}
+}
 </style>
 </head>
 <body>
-<header>
-  <h1>MOSAIC</h1>
-  <span class="sub">نظام يتعلم باستمرار، يثبت تحسنه، ويستقل عن النماذج التي تعلّم منها</span>
-  <span id="net" class="chip"></span>
-</header>
-<nav id="tabs">
-  <button data-t="chat" class="on">المحادثة</button>
-  <button data-t="dash">لوحة إثبات التطور</button>
-  <button data-t="task">المهام</button>
-  <button data-t="approve">الموافقات</button>
-  <button data-t="teach">تعليم</button>
-  <button data-t="settings">الإعدادات</button>
-  <button data-t="log">السجل</button>
-</nav>
-<main>
-  <section id="chat" class="on">
-    <div class="chatwrap">
-      <aside class="convs">
-        <button class="btn" id="newconv">+ محادثة جديدة</button>
-        <div id="convlist"></div>
-        <div class="card mem"><b>ذاكرتي</b><p class="note">اكتب «تذكر أن …» لأحفظ شيئًا، و«انس كل شيء» لمسح الملاحظات.</p><div id="memlist"></div></div>
-      </aside>
-      <div class="chatmain">
-        <div id="llmstatus" class="note"></div>
-        <div id="msgs"></div>
-        <form id="composer">
-          <textarea id="msgin" rows="2" placeholder="اكتب رسالتك… (Enter للإرسال، Shift+Enter لسطر جديد)"></textarea>
-          <button class="btn" id="send" type="submit">إرسال</button>
-        </form>
+<div class="app" id="app">
+  <aside id="sidebar">
+    <div class="brand"><img src="/icon.svg" alt=""><b>MOSAIC</b></div>
+    <button class="newchat" id="newchat"><svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>محادثة جديدة</button>
+    <div class="search"><input id="convsearch" type="search" placeholder="ابحث في المحادثات…" aria-label="بحث"></div>
+    <div id="convlist"></div>
+    <nav class="sidenav" id="sidenav">
+      <button data-v="dash"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>لوحة إثبات التطور</button>
+      <button data-v="teach"><svg viewBox="0 0 24 24"><path d="M4 19.5V5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 1-2-1.5zM8 7h6"/></svg>تعليم ومهام</button>
+      <button data-v="memory"><svg viewBox="0 0 24 24"><path d="M12 3a7 7 0 0 0-4 12.7V19h8v-3.3A7 7 0 0 0 12 3zM9 22h6"/></svg>الذاكرة <span id="pendingbadge" class="chip" hidden></span></button>
+      <button data-v="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>الإعدادات</button>
+      <button id="themebtn"><svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><span id="themelabel">المظهر: تلقائي</span></button>
+    </nav>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <main>
+    <div class="topbar">
+      <button class="menu" id="menubtn" aria-label="القائمة"><svg class="icon" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+      <div class="modelpick"><span class="dot" id="statusdot"></span><select id="modelpick" aria-label="النموذج"></select></div>
+      <span class="status" id="statustext"></span>
+      <span style="flex:1"></span>
+      <button class="iconbtn" id="exportbtn" title="تصدير المحادثة (Markdown)" hidden><svg class="icon" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg></button>
+    </div>
+
+    <!-- ======== chat ======== -->
+    <section class="view on" id="v-chat">
+      <div id="welcome">
+        <img src="/icon.svg" alt="">
+        <h1 id="greet">كيف أستطيع مساعدتك اليوم؟</h1>
+        <p>أتعلم من تصحيحاتك وأتذكر ما تطلب مني حفظه.</p>
+        <div class="suggest" id="suggest"></div>
       </div>
-    </div>
-  </section>
+      <div class="col" id="thread" hidden></div>
+      <div class="col composer-wrap">
+        <form class="composer" id="composer">
+          <div id="pending-atts"></div>
+          <textarea id="msgin" rows="1" placeholder="اكتب رسالتك لـ MOSAIC…" aria-label="الرسالة"></textarea>
+          <div class="row">
+            <button type="button" class="iconbtn" id="attachbtn" title="إرفاق صور أو ملفات نصية"><svg class="icon" viewBox="0 0 24 24"><path d="M21.4 11.1l-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg></button>
+            <input type="file" id="filein" multiple hidden accept="image/png,image/jpeg,image/webp,image/gif,.txt,.md,.csv,.json,.py,.js,.ts,.html,.css,.xml,.yaml,.yml,.log,.sql,.java,.kt,.c,.cpp,.h,.go,.rs,.rb,.php,.sh">
+            <button type="button" class="iconbtn" id="micbtn" title="إملاء صوتي" hidden><svg class="icon" viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+            <span class="grow"></span>
+            <button type="submit" class="iconbtn sendbtn" id="sendbtn" title="إرسال" disabled><svg class="icon" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+          </div>
+        </form>
+        <div class="disclaimer">قد يخطئ MOSAIC والنموذج الذي يستخدمه. صحّح الأخطاء ليتعلم منها.</div>
+      </div>
+    </section>
 
-  <section id="dash">
-    <div class="row"><button class="btn" id="learn">تشغيل دورة تعلم</button><span id="learnmsg" class="note"></span></div>
-    <div class="grid" id="kpis" style="margin-top:12px"></div>
-    <div class="card"><h3>الفئات: الأداء على مهام مستقلة والاستقلال عن المعلّم</h3><div class="tw"><table id="cats"></table></div>
-      <p class="note">«الدقة المستقلة» تُقاس على أمثلة لم تُستخدم في التعلم ولم تُرسل إلى أي نموذج معلّم. لا يُعرض عدد الذكريات كدليل على الذكاء.</p></div>
-    <div class="card"><h3>التحسينات (المعتمدة والمرفوضة)</h3><div class="tw"><table id="imps"></table></div></div>
-    <div class="card"><h3>النماذج المعلّمة: الدقة المقاسة فعليًا</h3><div class="tw"><table id="models"></table></div></div>
-    <div class="card"><h3>مصادر المعرفة</h3><div class="tw"><table id="sources"></table></div></div>
-    <div class="card"><h3>الأدوات التي طوّرها النظام</h3><div class="tw"><table id="tools"></table></div></div>
-    <div class="card"><h3>الأخطاء المتكررة</h3><div class="tw"><table id="errors"></table></div></div>
-  </section>
+    <!-- ======== dashboard ======== -->
+    <section class="view" id="v-dash"><div class="col panel">
+      <div class="btns"><h2 style="flex:1">لوحة إثبات التطور</h2><button class="btn" id="learn">تشغيل دورة تعلم</button></div>
+      <p id="learnmsg" class="note"></p>
+      <div class="grid" id="kpis"></div>
+      <div class="card"><h3>من يجيب عن المهام مع الوقت</h3>
+        <div class="legend"><span><i style="background:var(--series-1)"></i>MOSAIC وحده</span><span><i style="background:var(--series-2)"></i>النموذج المعلّم</span></div>
+        <div id="chart-line"></div>
+        <p class="note">كلما ارتفع الخط الأزرق وانخفض البرتقالي، صار MOSAIC أكثر استقلالًا.</p></div>
+      <div class="card"><h3>الدقة على اختبار مستقل لكل فئة</h3><div id="chart-bars"></div>
+        <p class="note">تُقاس على أمثلة لم تُستخدم في التعلم ولم تُرسل إلى أي نموذج معلّم. عدد الذكريات ليس دليلًا على الذكاء.</p></div>
+      <div class="card"><h3>الفئات</h3><div class="tw"><table class="t" id="cats"></table></div></div>
+      <div class="card"><h3>التحسينات المعتمدة والمرفوضة</h3><div class="tw"><table class="t" id="imps"></table></div></div>
+      <div class="card"><h3>النماذج المعلّمة: الدقة المقاسة فعليًا</h3><div class="tw"><table class="t" id="models"></table></div></div>
+      <div class="card"><h3>مصادر المعرفة</h3><div class="tw"><table class="t" id="sources"></table></div></div>
+      <div class="card"><h3>الأدوات التي طوّرها النظام</h3><div class="tw"><table class="t" id="tools"></table></div></div>
+      <div class="card"><h3>الأخطاء المتكررة</h3><div class="tw"><table class="t" id="errors"></table></div></div>
+      <div class="card"><h3>سجل التغييرات (لا يقبل التعديل أو الحذف)</h3><div class="tw"><table class="t" id="clog"></table></div></div>
+      <div class="card"><h3>المهام المجدولة</h3><div class="tw"><table class="t" id="jobs"></table></div></div>
+    </div></section>
 
-  <section id="task">
-    <div class="card">
-      <label>الفئة</label><select id="tcat"></select>
-      <label>المدخل</label><input id="tin" placeholder="اكتب المهمة">
-      <label class="row"><input type="checkbox" id="tpriv" style="width:auto"> بيانات خاصة (لا تُرسل لأي نموذج خارجي)</label>
-      <button class="btn" id="tgo">نفّذ</button>
-      <div id="tout"></div>
-    </div>
-  </section>
+    <!-- ======== teach & tasks ======== -->
+    <section class="view" id="v-teach"><div class="col panel">
+      <h2>تعليم ومهام</h2>
+      <div class="card"><h3>نفّذ مهمة في فئة محددة</h3>
+        <label class="l">الفئة</label><select class="f" id="tcat"></select>
+        <label class="l">المدخل</label><input class="f" id="tin" placeholder="اكتب المهمة">
+        <label class="l"><input type="checkbox" id="tpriv"> بيانات خاصة (لا تُرسل لأي نموذج خارجي)</label>
+        <button class="btn" id="tgo">نفّذ</button><div id="tout"></div></div>
+      <div class="card"><h3>إضافة فئة جديدة (بلا حد لعدد الفئات)</h3>
+        <label class="l">الاسم (حروف لاتينية بلا مسافات)</label><input class="f" id="cname">
+        <label class="l">النوع</label><select class="f" id="ckind"><option value="transform">تحويل / إجراء</option><option value="qa">سؤال وجواب / معرفة</option></select>
+        <label class="l">الوصف (يُرسل للمعلّم)</label><input class="f" id="cdesc">
+        <label class="l">اللغة</label><input class="f" id="clang" value="ar">
+        <button class="btn" id="cadd">أضف</button> <span id="cmsg" class="note"></span></div>
+      <div class="card"><h3>أمثلة مُتحقق منها</h3>
+        <label class="l">الفئة</label><select class="f" id="ecat"></select>
+        <label class="l">سطر لكل مثال: المدخل ثم | ثم المخرج</label><textarea class="f" id="epairs" rows="6"></textarea>
+        <label class="l">التقسيم</label><select class="f" id="esplit"><option value="">تلقائي (30٪ اختبار مستقل)</option><option value="dev">تطوير</option><option value="heldout">اختبار مستقل</option></select>
+        <button class="btn" id="eadd">احفظ</button> <span id="emsg" class="note"></span></div>
+    </div></section>
 
-  <section id="approve"><div class="card"><h3>تغييرات تنتظر موافقتك</h3><div id="pending"></div></div></section>
+    <!-- ======== memory & approvals ======== -->
+    <section class="view" id="v-memory"><div class="col panel">
+      <h2>الذاكرة والموافقات</h2>
+      <div class="card"><h3>ما طلبت مني تذكره</h3><p class="note">اكتب في المحادثة «تذكر أن …» لأحفظ شيئًا، و«انس كل شيء» لمسح الملاحظات.</p><div id="memlist"></div></div>
+      <div class="card"><h3>إحصاءات المحادثة</h3><div class="grid" id="chatkpis"></div></div>
+      <div class="card"><h3>تغييرات تنتظر موافقتك</h3><div id="pending"></div></div>
+      <div class="card"><h3>طابور التحقق</h3><div class="tw"><table class="t" id="vq"></table></div></div>
+    </div></section>
 
-  <section id="teach">
-    <div class="card"><h3>إضافة فئة جديدة (بلا حد لعدد الفئات)</h3>
-      <label>الاسم (حروف لاتينية بلا مسافات)</label><input id="cname">
-      <label>النوع</label><select id="ckind"><option value="transform">تحويل / إجراء</option><option value="qa">سؤال وجواب / معرفة</option></select>
-      <label>الوصف (يُرسل للمعلّم)</label><input id="cdesc">
-      <label>اللغة</label><input id="clang" value="ar">
-      <button class="btn" id="cadd">أضف</button><span id="cmsg" class="note"></span>
-    </div>
-    <div class="card"><h3>أمثلة مُتحقق منها</h3>
-      <label>الفئة</label><select id="ecat"></select>
-      <label>سطر لكل مثال: المدخل ⇥ (Tab) أو | ثم المخرج</label><textarea id="epairs" rows="6"></textarea>
-      <label>التقسيم</label><select id="esplit"><option value="">تلقائي (٣٠٪ اختبار مستقل)</option><option value="dev">تطوير</option><option value="heldout">اختبار مستقل</option></select>
-      <button class="btn" id="eadd">احفظ</button><span id="emsg" class="note"></span>
-    </div>
-  </section>
-
-  <section id="settings"><div class="card"><h3>الإعدادات والحدود</h3><div id="sets"></div><button class="btn" id="ssave">احفظ</button><span id="smsg" class="note"></span></div>
-    <div class="card"><h3>حالة الجهاز (يرسلها تطبيق الهاتف)</h3><pre id="device"></pre></div></section>
-
-  <section id="log"><div class="card"><h3>سجل التغييرات (لا يقبل التعديل أو الحذف)</h3><div class="tw"><table id="clog"></table></div></div>
-    <div class="card"><h3>المهام المجدولة</h3><div class="tw"><table id="jobs"></table></div></div>
-    <div class="card"><h3>طابور التحقق</h3><div class="tw"><table id="vq"></table></div></div></section>
-</main>
+    <!-- ======== settings ======== -->
+    <section class="view" id="v-settings"><div class="col panel">
+      <h2>الإعدادات</h2>
+      <div class="card"><div id="sets"></div><button class="btn" id="ssave">احفظ</button> <span id="smsg" class="note"></span></div>
+      <div class="card"><h3>حالة الجهاز</h3><pre class="box" id="device"></pre></div>
+    </div></section>
+  </main>
+</div>
+<script src="/charts.js"></script>
 <script src="/app.js"></script>
 </body>
 </html>
