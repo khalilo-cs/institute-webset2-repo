@@ -400,3 +400,53 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
+def training_status(db_path: str) -> dict[str, Any]:
+    """Return local consent and artifact status without exposing message contents."""
+    db = Path(db_path).expanduser().resolve()
+    consented = 0
+    total_corrections = 0
+    if db.exists():
+        con = sqlite3.connect(str(db), timeout=20)
+        try:
+            exists = con.execute(
+                "SELECT 1 FROM sqlite_master WHERE type='table' AND name='chat_feedback'"
+            ).fetchone()
+            if exists:
+                columns = {row[1] for row in con.execute("PRAGMA table_info(chat_feedback)")}
+                if "allow_training" in columns:
+                    row = con.execute(
+                        "SELECT COUNT(*), SUM(CASE WHEN allow_training=1 THEN 1 ELSE 0 END) "
+                        "FROM chat_feedback WHERE rating='not_accurate' AND length(trim(correction))>0"
+                    ).fetchone()
+                    total_corrections = int(row[0] or 0)
+                    consented = int(row[1] or 0)
+        finally:
+            con.close()
+    data_dir = db.parent / "mosaic-training-data"
+    manifest_path = data_dir / "manifest.json"
+    manifest = {}
+    if manifest_path.exists():
+        try:
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            manifest = {}
+    adapter_dir = db.parent / "mosaic-adapters" / "mosaic-lora"
+    report_path = adapter_dir / "mosaic_training_report.json"
+    report = {}
+    if report_path.exists():
+        try:
+            report = json.loads(report_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            report = {}
+    return {
+        "consented_corrections": consented,
+        "corrections_not_consented": max(0, total_corrections - consented),
+        "dataset_prepared": bool(manifest),
+        "dataset": manifest,
+        "adapter_trained": bool(report),
+        "training_report": report,
+        "data_dir": str(data_dir),
+        "adapter_dir": str(adapter_dir),
+    }
