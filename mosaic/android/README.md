@@ -46,3 +46,16 @@ The embedded engine is the current research prototype described in
 `../README.md`. It is a continual-learning engine with verified skill and
 knowledge categories, not yet a general-purpose conversational language model.
 External teacher integrations are not configured by this Android build.
+
+
+## MOSAIC Android extended workspaces
+
+The Android shell now exposes:
+- Native Android speech recognition (microphone permission is requested only when you tap the microphone) and Arabic text-to-speech.
+- Android Storage Access Framework file picker. MOSAIC reads only files the user explicitly selects; the current reader supports text, Markdown, CSV, JSON and log files up to 1 MB each.
+- A website research workspace. It stores public HTML text in a separate local SQLite knowledge index and shows source URLs, timestamps and content hashes. Up to 8 same-origin pages are fetched per request.
+- Retrieval of saved website excerpts for non-private questions, with source links surfaced in the UI. Private questions do not attach web excerpts or call external teachers through this feature.
+
+Website research is intentionally bounded: it honours robots.txt, blocks local/private network addresses and unsafe redirects, and does not bypass authentication, paywalls, CAPTCHAs, or access controls. A page being indexed does not mean its claims are verified.
+
+Image and video workspaces are currently interface placeholders. Real generation still requires choosing and configuring a compatible generation provider and securely provisioning its API credentials. Do not put provider secrets in the Android APK or source repository.
