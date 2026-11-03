@@ -83,8 +83,8 @@ def make_handler(mo: Mosaic):
                         from .web_learning import search_knowledge
                         db_path = str(Path(os.environ.get("MOSAIC_DB", "mosaic.db")).with_name("mosaic_web_knowledge.sqlite"))
                         knowledge = search_knowledge(user_input, db_path, limit=3)
-                    context = "\\n\\n".join(
-                        f"المصدر: {item['title']} ({item['url']})\\n{item['excerpt']}"
+                    context = "\n\n".join(
+                        f"المصدر: {item['title']} ({item['url']})\n{item['excerpt']}"
                         for item in knowledge
                     )
                     result = mo.solve(str(b["category"]), user_input,
