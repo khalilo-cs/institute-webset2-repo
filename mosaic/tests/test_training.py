@@ -90,7 +90,7 @@ class TrainingExportTests(unittest.TestCase):
 
     def test_withdrawal_invalidates_prepared_dataset(self):
         _, assistant = self.add_example(21, True)
-        output = Path(self.tmp.name) / "revocation-data"
+        output = Path(self.db).parent / "mosaic-training-data"
         export_consented_feedback(self.db, str(output))
         self.assertTrue((output / "manifest.json").exists())
         save_chat_feedback(
