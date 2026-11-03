@@ -449,6 +449,16 @@ document.querySelectorAll("#tabs button").forEach(b => b.addEventListener("click
     else loadConversationList().catch(() => {});
   }
 }));
+(async function showProviderStatus() {
+  try {
+    const p = await api("/api/provider/status");
+    const modes = [];
+    if (p.local_configured) modes.push("محلي: " + p.local_model);
+    if (p.cloud_configured) modes.push("سحابي: " + p.cloud_model);
+    $("net").textContent = modes.length ? "النماذج جاهزة · " + modes.join(" | ") : "لم يتم إعداد نموذج بعد";
+    $("net").className = "chip " + (modes.length ? "ok" : "warn");
+  } catch (_) { $("net").textContent = "تعذر فحص إعداد النموذج"; }
+})();
 (async function initChat() {
   try {
     const r = await api("/api/conversations");
