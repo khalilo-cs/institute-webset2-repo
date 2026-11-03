@@ -279,6 +279,8 @@ def train_lora(data_dir: str, output_dir: str, model_id: str = DEFAULT_BASE_MODE
         bias="none"
     )
     model = get_peft_model(model, lora)
+    if hasattr(model, "enable_input_require_grads"):
+        model.enable_input_require_grads()
     model.print_trainable_parameters()
 
     output_path = Path(output_dir).expanduser().resolve()
