@@ -107,7 +107,11 @@ $("tgo").onclick = async () => {
   try {
     const r = await api("/api/task", { category: $("tcat").value, input: $("tin").value, private: $("tpriv").checked });
     const c = el("div", null, "card");
-    c.append(el("p", r.answer ?? "لا أعرف بعد. علّمني الإجابة الصحيحة."), el("p", "الحل من: " + r.solver + (r.cost ? ` · $${r.cost}` : ""), "note"));
+    c.append(el("p", r.answer ?? "لا أعرف بعد. علّمني الإجابة الصحيحة."), el("p", "الحل من: " + r.solver + (r.cost ? ` · ${r.cost}` : ""), "note"));
+    if (r.knowledge_sources && r.knowledge_sources.length) {
+      c.append(el("p", "استندت المحاولة إلى مقتطفات من مصادر المعرفة المحفوظة:", "note"));
+      r.knowledge_sources.forEach(src => { const a = el("a", src.title); a.href = src.url; a.target = "_blank"; a.rel = "noopener noreferrer"; c.append(a, el("span", " · ", "note")); });
+    }
     const fix = el("input"); fix.placeholder = "الإجابة الصحيحة (للتصحيح)";
     const row = el("div", null, "row");
     const mk = (t, kind, needs) => { const b = el("button", t, "btn alt"); b.onclick = async () => { try { await api("/api/feedback", { episode_id: r.episode_id, kind, correct_answer: needs ? fix.value : null, note: fix.value }); b.textContent = "✓ " + t; refresh(); } catch (e) { alert(e.message); } }; return b; };
@@ -188,6 +192,7 @@ $("vsend").onclick = async () => {
     const r = await api("/api/task", {category: $("vcat").value || $("tcat").value, input, private: false});
     const answer = r.answer || "لم أتمكن من إنتاج إجابة.";
     $("vresult").textContent = answer + " — المصدر: " + (r.solver || "MOSAIC");
+    if (r.knowledge_sources && r.knowledge_sources.length) $("vresult").textContent += " · استُخدمت " + r.knowledge_sources.length + " مصادر ويب محفوظة.";
     if ($("vspeak").checked) say(answer);
   } catch (e) { $("vresult").textContent = e.message; }
 };
