@@ -316,3 +316,41 @@ def search_conversations(db_path: str, query: str) -> list[dict]:
             "ORDER BY c.updated_at DESC",
             (term, term)).fetchall()
     return [dict(r) for r in rows]
+
+
+def build_attachment_content(db_path: str, file_ids: list[str], max_files: int = 10):
+    """Build safe model context from extracted text and bounded image data URLs.
+
+    Images are sent only to the already-selected model provider. Non-image binary
+    attachments remain stored but are never executed or blindly forwarded.
+    """
+    import io
+    blocks = []
+    image_count = 0
+    image_bytes = 0
+    text_parts = []
+    for fid in file_ids[:max_files]:
+        item = get_file(db_path, str(fid))
+        if not item:
+            continue
+        name = item["original_name"]
+        extracted = item.get("extracted_text", "")
+        if extracted:
+            text_parts.append(f"[ملف: {name}]\\n{extracted[:40000]}")
+            continue
+        mime = item.get("mime_type", "")
+        if mime in ("image/png", "image/jpeg", "image/webp", "image/gif") and image_count < 4:
+            size = int(item.get("size_bytes", 0))
+            if size > 5 * 1024 * 1024 or image_bytes + size > 8 * 1024 * 1024:
+                text_parts.append(f"[الصورة {name}: محفوظة لكن تجاوزت حد الإرسال المرئي]")
+                continue
+            data = Path(item["download_path"]).read_bytes()
+            blocks.append({"type": "image_url", "image_url": {
+                "url": "data:" + mime + ";base64," + base64.b64encode(data).decode("ascii")
+            }})
+            image_count += 1
+            image_bytes += size
+            blocks.append({"type": "text", "text": "الصورة المرفقة: " + name})
+    if text_parts:
+        blocks.insert(0, {"type": "text", "text": "محتويات الملفات المرفقة:\\n" + "\\n\\n".join(text_parts)})
+    return blocks
