@@ -300,9 +300,14 @@ function renderChatMessages(messages) {
   });
   box.scrollTop = box.scrollHeight;
 }
+let showingArchived = false;
 async function loadConversationList() {
   const query = $("chatsearch") ? $("chatsearch").value.trim() : "";
-  const r = await api("/api/conversations" + (query ? "?q=" + encodeURIComponent(query) : ""));
+  const params = new URLSearchParams();
+  if (query && !showingArchived) params.set("q", query);
+  if (showingArchived) params.set("archived", "1");
+  const suffix = params.toString() ? "?" + params.toString() : "";
+  const r = await api("/api/conversations" + suffix);
   const box = $("conversationlist"); box.replaceChildren();
   (r.conversations || []).forEach(c => {
     const row = el("div", null, "row");
@@ -314,6 +319,15 @@ async function loadConversationList() {
       const title = prompt("اسم المحادثة", c.title);
       if (title !== null) { await api("/api/conversations/" + c.id + "/rename", {title}); await loadConversationList(); }
     };
+    const archive = el("button", showingArchived ? "↩" : "▣", "btn alt");
+    archive.title = showingArchived ? "استعادة من الأرشيف" : "أرشفة المحادثة";
+    archive.onclick = async () => {
+      await api("/api/conversations/" + c.id + "/archive", {archived: !showingArchived});
+      if (activeConversationId === c.id && !showingArchived) {
+        activeConversationId = null; await createChat();
+      }
+      await loadConversationList();
+    };
     const remove = el("button", "×", "btn bad");
     remove.title = "حذف المحادثة";
     remove.onclick = async () => {
@@ -322,7 +336,7 @@ async function loadConversationList() {
       if (activeConversationId === c.id) { activeConversationId = null; await createChat(); }
       await loadConversationList();
     };
-    row.append(open, rename, remove); box.appendChild(row);
+    row.append(open, rename, archive, remove); box.appendChild(row);
   });
 }
 async function openConversation(cid) {
@@ -432,3 +446,9 @@ document.querySelectorAll("#tabs button").forEach(b => b.addEventListener("click
 })();
 
 $("chatsearch").addEventListener("input", () => loadConversationList().catch(() => {}));
+
+$("archivetoggle").onclick = async () => {
+  showingArchived = !showingArchived;
+  $("archivetoggle").textContent = showingArchived ? "عرض المحادثات النشطة" : "عرض الأرشيف";
+  await loadConversationList();
+};
