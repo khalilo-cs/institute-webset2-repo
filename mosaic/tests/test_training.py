@@ -17,13 +17,14 @@ class TrainingExportTests(unittest.TestCase):
     def tearDown(self):
         self.tmp.cleanup()
 
-    def add_example(self, index, allow_training):
+    def add_example(self, index, allow_training, conversation_id=None):
+        conversation_id = conversation_id or self.chat["id"]
         user = add_message(
-            self.db, self.chat["id"], "user",
+            self.db, conversation_id, "user",
             f"اشرح مفهوم الاختبار رقم {index}"
         )
         assistant = add_message(
-            self.db, self.chat["id"], "assistant",
+            self.db, conversation_id, "assistant",
             "إجابة أولية تحتاج تحسيناً"
         )
         result = save_chat_feedback(
@@ -59,6 +60,32 @@ class TrainingExportTests(unittest.TestCase):
         self.assertEqual(result["train_examples"], 0)
         self.assertEqual(result["eval_examples"], 0)
 
+
+    def test_heldout_split_keeps_conversations_separate(self):
+        second_chat = create_conversation(self.db)
+        train_chat = self.chat["id"]
+        eval_chat = second_chat["id"]
+        for index in range(6):
+            self.add_example(index, True, train_chat)
+        for index in range(6, 12):
+            self.add_example(index, True, eval_chat)
+        output = Path(self.tmp.name) / "conversation-split"
+        result = export_consented_feedback(self.db, str(output))
+        self.assertEqual(result["split_strategy"], "conversation")
+        train_rows = [json.loads(line) for line in (output / "train.jsonl").read_text(encoding="utf-8").splitlines()]
+        eval_rows = [json.loads(line) for line in (output / "eval.jsonl").read_text(encoding="utf-8").splitlines()]
+        con = __import__("sqlite3").connect(self.db)
+        try:
+            ids = [row["message_id"] for row in train_rows + eval_rows]
+            lookup = dict(con.execute(
+                "SELECT id,conversation_id FROM chat_messages WHERE role='assistant'"
+            ).fetchall())
+        finally:
+            con.close()
+        train_conversations = {lookup[row["message_id"]] for row in train_rows}
+        eval_conversations = {lookup[row["message_id"]] for row in eval_rows}
+        self.assertTrue(train_conversations.isdisjoint(eval_conversations))
+        self.assertEqual(train_conversations | eval_conversations, {train_chat, eval_chat})
 
 if __name__ == "__main__":
     unittest.main()
