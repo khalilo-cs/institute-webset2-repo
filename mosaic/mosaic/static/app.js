@@ -391,6 +391,18 @@ $("chatfiles").addEventListener("change", async (event) => {
   }
   event.target.value = "";
 });
+$("chatlearnfiles").onclick = async () => {
+  if (!attachedFileIds.length) { alert("أرفق ملفات أولاً."); return; }
+  const button = $("chatlearnfiles");
+  button.disabled = true; button.textContent = "جارٍ الفهرسة…";
+  try {
+    const result = await api("/api/knowledge/ingest", {file_ids: attachedFileIds});
+    const indexed = result.results.reduce((sum, item) => sum + (item.indexed || 0), 0);
+    const skipped = result.results.filter(item => !item.indexed).length;
+    alert("اكتملت الفهرسة: " + indexed + " مقطعاً. ملفات لم يتوفر لها نص قابل للاستخراج: " + skipped + ". ستُستخدم المعرفة في الأسئلة اللاحقة.");
+  } catch (e) { alert("تعذر التعلم من الملفات: " + e.message); }
+  finally { button.disabled = false; button.textContent = "تعلم من الملفات المحددة"; }
+};
 $("chatclearfiles").onclick = () => {
   attachedFileIds = [];
   $("chatattachments").replaceChildren();
