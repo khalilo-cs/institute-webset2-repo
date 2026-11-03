@@ -279,3 +279,130 @@ document.querySelectorAll("#tabs button").forEach(b => {
     if (b.dataset.t === "knowledge") loadWebSources();
   });
 });
+
+
+// Persistent ChatGPT-style conversation workspace and universal file attachments.
+let activeConversationId = null;
+let attachedFileIds = [];
+function renderChatMessages(messages) {
+  const box = $("chatmessages"); box.replaceChildren();
+  (messages || []).forEach(m => {
+    const node = el("div", null, "message " + m.role);
+    node.textContent = m.content || "";
+    box.appendChild(node);
+  });
+  box.scrollTop = box.scrollHeight;
+}
+async function loadConversationList() {
+  const r = await api("/api/conversations");
+  const box = $("conversationlist"); box.replaceChildren();
+  (r.conversations || []).forEach(c => {
+    const b = el("button", c.title + " · " + c.message_count, "btn alt");
+    b.style.width = "100%"; b.style.textAlign = "start"; b.style.margin = "4px 0";
+    b.onclick = () => openConversation(c.id);
+    box.appendChild(b);
+  });
+}
+async function openConversation(cid) {
+  const c = await api("/api/conversations/" + encodeURIComponent(cid));
+  activeConversationId = c.id;
+  $("chatheading").textContent = c.title;
+  renderChatMessages(c.messages);
+  $("chatprovider").textContent = "";
+  attachedFileIds = [];
+  $("chatattachments").replaceChildren();
+  (c.files || []).forEach(f => {
+    const p = el("span", f.original_name + " · " + f.mime_type, "filepill");
+    $("chatattachments").appendChild(p);
+  });
+  await loadConversationList();
+}
+async function createChat() {
+  const c = await api("/api/conversations", {title: "محادثة جديدة"});
+  await openConversation(c.id);
+  $("chatinput").focus();
+}
+async function encodeFileBase64(file) {
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  let binary = "";
+  const step = 0x8000;
+  for (let i = 0; i < bytes.length; i += step) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + step));
+  }
+  return btoa(binary);
+}
+$("chatfiles").addEventListener("change", async (event) => {
+  const files = Array.from(event.target.files || []);
+  for (const file of files) {
+    if (file.size > 20 * 1024 * 1024) {
+      $("chatattachments").appendChild(el("p", file.name + ": الحد الأقصى 20MB.", "bad"));
+      continue;
+    }
+    try {
+      const saved = await api("/api/files/upload", {
+        filename: file.name, content_base64: await encodeFileBase64(file),
+        conversation_id: activeConversationId
+      });
+      attachedFileIds.push(saved.id);
+      $("chatattachments").appendChild(el("span",
+        saved.name + " · " + saved.status + " · " + saved.extracted_characters + " حرف",
+        "filepill"));
+    } catch (e) {
+      $("chatattachments").appendChild(el("p", file.name + ": " + e.message, "bad"));
+    }
+  }
+  event.target.value = "";
+});
+$("chatclearfiles").onclick = () => {
+  attachedFileIds = [];
+  $("chatattachments").replaceChildren();
+  $("chatfiles").value = "";
+};
+$("newchat").onclick = () => createChat().catch(e => alert(e.message));
+$("chatsend").onclick = async () => {
+  const prompt = $("chatinput").value.trim();
+  if (!prompt) return;
+  if (!activeConversationId) await createChat();
+  $("chatsend").disabled = true;
+  $("chatsend").textContent = "جارٍ الإرسال…";
+  try {
+    const r = await api("/api/chat", {
+      conversation_id: activeConversationId, message: prompt,
+      file_ids: attachedFileIds, private: $("chatprivate").checked
+    });
+    $("chatinput").value = "";
+    attachedFileIds = [];
+    $("chatattachments").replaceChildren();
+    $("chatprovider").textContent = "المزوّد: " + r.provider;
+    await openConversation(activeConversationId);
+    $("chatprovider").textContent = "المزوّد: " + r.provider;
+    if (r.knowledge_sources && r.knowledge_sources.length) {
+      const refs = el("div", "المصادر: " + r.knowledge_sources.map(x => x.title).join("، "), "note");
+      $("chatmessages").appendChild(refs);
+    }
+  } catch (e) {
+    $("chatmessages").appendChild(el("div", e.message, "bad"));
+  } finally {
+    $("chatsend").disabled = false;
+    $("chatsend").textContent = "إرسال";
+  }
+};
+$("chatinput").addEventListener("keydown", (event) => {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    $("chatsend").click();
+  }
+});
+document.querySelectorAll("#tabs button").forEach(b => b.addEventListener("click", () => {
+  if (b.dataset.t === "chat") {
+    if (!activeConversationId) createChat().catch(e => $("chatmessages").textContent = e.message);
+    else loadConversationList().catch(() => {});
+  }
+}));
+(async function initChat() {
+  try {
+    const r = await api("/api/conversations");
+    if (r.conversations.length) await openConversation(r.conversations[0].id);
+    else await createChat();
+  } catch (e) { $("chatmessages").textContent = "تعذر تهيئة المحادثات: " + e.message; }
+})();
