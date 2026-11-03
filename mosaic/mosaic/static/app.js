@@ -312,9 +312,19 @@ function renderChatMessages(messages) {
         const correction = prompt("اكتب التصحيح الذي تريد من MOSAIC الاستفادة منه:");
         if (correction === null) return;
         if (!correction.trim()) { alert("اكتب التصحيح أولاً."); return; }
+        const allowTraining = confirm(
+          "هل تسمح باستخدام هذا التصحيح تحديداً في تدريب محلي لمحوّل MOSAIC؟\\n\\n" +
+          "لن تُرسل بياناته إلى مزوّد سحابي. اختر إلغاءً للاحتفاظ به للبحث فقط دون تدريب."
+        );
         try {
-          await api("/api/chat/feedback", {message_id: m.id, rating: "not_accurate", correction});
-          controls.replaceChildren(el("span", "حُفظ التصحيح في المعرفة القابلة للاسترجاع.", "note"));
+          await api("/api/chat/feedback", {
+            message_id: m.id, rating: "not_accurate", correction,
+            allow_training: allowTraining
+          });
+          controls.replaceChildren(el("span",
+            allowTraining ? "حُفظ التصحيح للمعرفة والتدريب المحلي المصرّح به." :
+              "حُفظ التصحيح للاسترجاع فقط، ولم يُصرّح بالتدريب.",
+            "note"));
         } catch (e) { alert(e.message); }
       };
       controls.append(good, bad);
