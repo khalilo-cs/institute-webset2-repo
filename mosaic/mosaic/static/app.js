@@ -189,7 +189,7 @@ $("vsend").onclick = async () => {
   if (!input) { $("vresult").textContent = "تحدث أو اكتب سؤالك أولاً."; return; }
   $("vresult").textContent = "يفكر MOSAIC…";
   try {
-    const r = await api("/api/task", {category: $("vcat").value || $("tcat").value, input, private: false});
+    const r = await api("/api/task", {category: $("vcat").value || $("tcat").value, input, private: $("vpriv").checked});
     const answer = r.answer || "لم أتمكن من إنتاج إجابة.";
     $("vresult").textContent = answer + " — المصدر: " + (r.solver || "MOSAIC");
     if (r.knowledge_sources && r.knowledge_sources.length) $("vresult").textContent += " · استُخدمت " + r.knowledge_sources.length + " مصادر ويب محفوظة.";
