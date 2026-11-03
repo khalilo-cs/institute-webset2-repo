@@ -67,6 +67,20 @@ class WorkspaceTests(unittest.TestCase):
         item = store_file(self.db, "payload.unknown", base64.b64encode(raw).decode(), self.chat["id"])
         self.assertEqual(build_attachment_content(self.db, [item["id"]]), [])
 
+
+    def test_knowledge_ingestion_search_and_forget(self):
+        from mosaic.knowledge import forget_file_knowledge, ingest_file, search_knowledge, knowledge_stats
+        raw = "MOSAIC learns from approved documents and retrieves source passages.\n" * 80
+        item = store_file(self.db, "research.txt", base64.b64encode(raw.encode()).decode(), self.chat["id"])
+        result = ingest_file(self.db, item["id"])
+        self.assertGreater(result["indexed"], 1)
+        found = search_knowledge(self.db, "approved documents retrieves")
+        self.assertTrue(found)
+        self.assertEqual(found[0]["source"], "research.txt")
+        self.assertEqual(knowledge_stats(self.db)["files"], 1)
+        self.assertGreater(forget_file_knowledge(self.db, item["id"]), 0)
+        self.assertEqual(search_knowledge(self.db, "approved documents"), [])
+
     def test_conversation_delete_removes_history(self):
         add_message(self.db, self.chat["id"], "user", "delete me")
         self.assertTrue(delete_conversation(self.db, self.chat["id"]))
