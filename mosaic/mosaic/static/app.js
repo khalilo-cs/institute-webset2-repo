@@ -536,10 +536,10 @@ async function loadTrainingStatus() {
       const r = s.training_report;
       $("trainingserve").textContent =
         "نتيجة فحص الاختبار المستقل: " + (r.regression_guard_passed ? "اجتاز حد عدم التراجع" : "لم يجتز حد عدم التراجع") +
-        "\\nخسارة النموذج الأساسي: " + r.baseline_eval_loss +
-        "\\nخسارة المحوّل: " + r.adapter_eval_loss +
-        "\\nالمحوّل: " + s.adapter_dir +
-        "\\n\\nلم يُفعّل تلقائياً. راجع النتائج قبل اعتماده.";
+        "\nخسارة النموذج الأساسي: " + r.baseline_eval_loss +
+        "\nخسارة المحوّل: " + r.adapter_eval_loss +
+        "\nالمحوّل: " + s.adapter_dir +
+        "\n\nلم يُفعّل تلقائياً. راجع النتائج قبل اعتماده.";
     }
   } catch (e) {
     $("trainingstatus").textContent = "تعذر قراءة حالة التدريب: " + e.message;
@@ -555,21 +555,21 @@ $("trainingprepare").onclick = async () => {
       "تم تجهيز " + r.total_examples + " مثالاً: " + r.train_examples +
       " للتدريب و" + r.eval_examples + " للاختبار المستقل. المسار: " + r.output_dir;
     mosaicTrainingCommands =
-      "cd mosaic\\n" +
-      "# CPU-only PyTorch (إذا كان لديك NVIDIA GPU، ثبّت إصدار CUDA المطابق بدلاً من هذا السطر)\\n" +
-      "python -m pip install torch --index-url https://download.pytorch.org/whl/cpu\\n" +
-      "python -m pip install -r training-requirements.txt\\n" +
+      "cd mosaic\n" +
+      "# CPU-only PyTorch (إذا كان لديك NVIDIA GPU، ثبّت إصدار CUDA المطابق بدلاً من هذا السطر)\n" +
+      "python -m pip install torch --index-url https://download.pytorch.org/whl/cpu\n" +
+      "python -m pip install -r training-requirements.txt\n" +
       "python -m mosaic.training train --data " + psQuote(r.output_dir) +
       " --output " + psQuote(r.output_dir.replace(/mosaic-training-data$/, "mosaic-adapters/mosaic-lora")) +
       " --model Qwen/Qwen2.5-0.5B-Instruct";
     $("trainingcommand").textContent = mosaicTrainingCommands;
     const adapterPath = r.output_dir.replace(/mosaic-training-data$/, "mosaic-adapters/mosaic-lora");
     $("trainingserve").textContent =
-      "# Terminal 1: start the local model (after training completes)\\n" +
-      "cd mosaic\\n" +
+      "# Terminal 1: start the local model (after training completes)\n" +
+      "cd mosaic\n" +
       "python -m mosaic.model_server --model Qwen/Qwen2.5-0.5B-Instruct --adapter " + psQuote(adapterPath) +
-      "\\n\\n# Terminal 2: set these before starting MOSAIC\\n" +
-      '$env:MOSAIC_LOCAL_BASE_URL="http://127.0.0.1:8766/v1"\\n' +
+      "\n\n# Terminal 2: set these before starting MOSAIC\n" +
+      '$env:MOSAIC_LOCAL_BASE_URL="http://127.0.0.1:8766/v1"\n' +
       '$env:MOSAIC_LOCAL_MODEL="mosaic-local"';
     $("trainingcopy").disabled = false;
     await loadTrainingStatus();
