@@ -108,3 +108,12 @@ Do not commit keys, put them in the APK, or paste them into source files. The Wi
 3. Image and video generation providers with real job status, outputs and usage limits.
 4. Cross-device account sync, encrypted backups and conversation search.
 5. Permissioned device search through Android Storage Access Framework and indexed user-selected folders.
+
+
+### Multimodal attachment analysis (current increment)
+- Chat and the dedicated file-question endpoint now pass extracted text plus bounded image data URLs to the configured OpenAI-compatible model.
+- Supported direct image MIME types for model forwarding: PNG, JPEG, WebP and GIF.
+- Limits: at most 4 images and 8 MiB aggregate image payload per request; each image is capped at 5 MiB for forwarding. Larger images remain stored and downloadable.
+- The selected local/cloud model must itself support vision. A text-only model may reject image content; MOSAIC does not pretend to have OCR/vision when the configured model lacks it.
+- Arbitrary non-image binary files are not forwarded as raw bytes and are never executed. Their supported extracted text can still be analyzed.
+- Added tests for image data URL construction and ensuring unknown binary payloads are not forwarded.
