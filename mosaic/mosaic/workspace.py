@@ -70,17 +70,29 @@ def _connect(db_path: str):
 def _now():
     return datetime.now(timezone.utc).isoformat()
 
+@contextmanager
+def _db(db_path: str):
+    con = _connect(db_path)
+    try:
+        yield con
+        con.commit()
+    except Exception:
+        con.rollback()
+        raise
+    finally:
+        con.close()
+
 
 def create_conversation(db_path: str, title: str = "محادثة جديدة") -> dict:
     cid, now = uuid.uuid4().hex, _now()
-    with _connect(db_path) as con:
+    with _db(db_path) as con:
         con.execute("INSERT INTO conversations(id,title,created_at,updated_at) VALUES(?,?,?,?)",
                     (cid, (title.strip() or "محادثة جديدة")[:120], now, now))
     return {"id": cid, "title": title.strip() or "محادثة جديدة", "created_at": now, "updated_at": now}
 
 
 def list_conversations(db_path: str, include_archived: bool = False) -> list[dict]:
-    with _connect(db_path) as con:
+    with _db(db_path) as con:
         rows = con.execute(
             "SELECT c.*, (SELECT COUNT(*) FROM chat_messages m WHERE m.conversation_id=c.id) AS message_count "
             "FROM conversations c WHERE (? OR c.archived=0) ORDER BY c.updated_at DESC",
@@ -89,7 +101,7 @@ def list_conversations(db_path: str, include_archived: bool = False) -> list[dic
 
 
 def get_conversation(db_path: str, cid: str) -> dict | None:
-    with _connect(db_path) as con:
+    with _db(db_path) as con:
         c = con.execute("SELECT * FROM conversations WHERE id=?", (cid,)).fetchone()
         if not c:
             return None
@@ -120,7 +132,7 @@ def add_message(db_path: str, cid: str, role: str, content: str, metadata: dict 
     if len(content) > 200_000:
         raise ValueError("Message is too large")
     mid, now = uuid.uuid4().hex, _now()
-    with _connect(db_path) as con:
+    with _db(db_path) as con:
         if not con.execute("SELECT 1 FROM conversations WHERE id=?", (cid,)).fetchone():
             raise KeyError("Conversation not found")
         con.execute("INSERT INTO chat_messages(id,conversation_id,role,content,created_at,metadata_json) "
@@ -135,21 +147,21 @@ def add_message(db_path: str, cid: str, role: str, content: str, metadata: dict 
 
 
 def rename_conversation(db_path: str, cid: str, title: str) -> bool:
-    with _connect(db_path) as con:
+    with _db(db_path) as con:
         cur = con.execute("UPDATE conversations SET title=?,updated_at=? WHERE id=?",
                           (title.strip()[:120] or "محادثة جديدة", _now(), cid))
         return cur.rowcount > 0
 
 
 def archive_conversation(db_path: str, cid: str, archived: bool = True) -> bool:
-    with _connect(db_path) as con:
+    with _db(db_path) as con:
         cur = con.execute("UPDATE conversations SET archived=?,updated_at=? WHERE id=?",
                           (int(archived), _now(), cid))
         return cur.rowcount > 0
 
 
 def delete_conversation(db_path: str, cid: str) -> bool:
-    with _connect(db_path) as con:
+    with _db(db_path) as con:
         cur = con.execute("DELETE FROM conversations WHERE id=?", (cid,))
         return cur.rowcount > 0
 
@@ -256,7 +268,7 @@ def store_file(db_path: str, filename: str, content_base64: str, conversation_id
 
 
 def list_files(db_path: str, conversation_id: str | None = None) -> list[dict]:
-    with _connect(db_path) as con:
+    with _db(db_path) as con:
         if conversation_id:
             rows = con.execute("SELECT id,conversation_id,original_name,mime_type,size_bytes,sha256,parser,"
                                "length(extracted_text) AS extracted_characters,created_at FROM workspace_files "
@@ -269,7 +281,7 @@ def list_files(db_path: str, conversation_id: str | None = None) -> list[dict]:
 
 
 def get_file(db_path: str, fid: str) -> dict | None:
-    with _connect(db_path) as con:
+    with _db(db_path) as con:
         row = con.execute("SELECT * FROM workspace_files WHERE id=?", (fid,)).fetchone()
     if not row:
         return None
@@ -283,7 +295,7 @@ def get_file(db_path: str, fid: str) -> dict | None:
 
 
 def delete_file(db_path: str, fid: str) -> bool:
-    with _connect(db_path) as con:
+    with _db(db_path) as con:
         row = con.execute("SELECT stored_name FROM workspace_files WHERE id=?", (fid,)).fetchone()
         if not row:
             return False
@@ -295,7 +307,7 @@ def delete_file(db_path: str, fid: str) -> bool:
 
 def search_conversations(db_path: str, query: str) -> list[dict]:
     term = "%" + query.strip() + "%"
-    with _connect(db_path) as con:
+    with _db(db_path) as con:
         rows = con.execute(
             "SELECT c.*, (SELECT COUNT(*) FROM chat_messages m WHERE m.conversation_id=c.id) AS message_count "
             "FROM conversations c WHERE c.archived=0 AND (c.title LIKE ? OR EXISTS "
