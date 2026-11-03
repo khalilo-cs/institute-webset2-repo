@@ -117,3 +117,16 @@ Do not commit keys, put them in the APK, or paste them into source files. The Wi
 - The selected local/cloud model must itself support vision. A text-only model may reject image content; MOSAIC does not pretend to have OCR/vision when the configured model lacks it.
 - Arbitrary non-image binary files are not forwarded as raw bytes and are never executed. Their supported extracted text can still be analyzed.
 - Added tests for image data URL construction and ensuring unknown binary payloads are not forwarded.
+
+
+## التعلم من ملفات المستخدم واسترجاع المعرفة
+- أرفق ملفاتك في المحادثة، ثم اضغط **«تعلم من الملفات المحددة»** لحفظ النص المستخرج في قاعدة معرفة محلية.
+- تُقسّم النصوص إلى مقاطع متداخلة، مع حفظ اسم الملف وبصمة SHA-256 ورقم المقطع كمصدر.
+- عند السؤال في محادثة غير خاصة، يسترجع MOSAIC المقاطع الأقرب إلى السؤال ويضيفها إلى سياق النموذج؛ وتظهر أسماء المصادر في الرد.
+- واجهات API: `POST /api/knowledge/ingest` و`POST /api/knowledge/search` و`POST /api/knowledge/forget`.
+- يمكن حذف معرفة ملف من الفهرس دون حذف الملف الأصلي عبر واجهة `/api/knowledge/forget`.
+- لا يُفهرس الملف تلقائياً بمجرد رفعه؛ يجب الضغط على زر التعلم. الملفات التي لا يتوفر لها محلل نصي تُحفظ كمرفقات فقط، ولا تُعد معرفة مفهومة.
+- هذه آلية ذاكرة واسترجاع (RAG)، وليست تدريباً فورياً لأوزان النموذج. لا يمكن ضمان صحة كل مستند؛ يجب التحقق من المصادر والتعارضات.
+
+## معنى «أي شيء وبدون حدود»
+MOSAIC مصمم لقبول امتدادات الملفات المختلفة وتوسيع المحللات والأدوات تدريجياً، لكنه لا يستطيع فهم كل صيغة لمجرد قبولها. الملفات التنفيذية والمجهولة لا تُشغّل. إجابات النموذج تعتمد على المزود المتصل وسياقه وقدراته وسياسات الاستخدام والموارد المتاحة. لا يوجد نظام واقعي يضمن إجابة صحيحة عن كل سؤال أو قدرات غير محدودة. الهدف هو تغطية واسعة قابلة للاختبار، مع إعلان عدم اليقين، وإذن المستخدم قبل الأفعال الخارجية أو التغييرات ذات الأثر.
