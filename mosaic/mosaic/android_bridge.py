@@ -28,6 +28,7 @@ def start_server(data_dir: str) -> str:
         root = Path(data_dir)
         root.mkdir(parents=True, exist_ok=True)
         db_path = root / "mosaic.db"
+        os.environ["MOSAIC_DB"] = str(db_path)
         engine = Mosaic(str(db_path))
 
         class LocalServer(ThreadingHTTPServer):
