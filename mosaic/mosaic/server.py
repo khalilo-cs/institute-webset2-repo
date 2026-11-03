@@ -201,7 +201,8 @@ def make_handler(mo: Mosaic):
                     if len(correction) > 20_000:
                         raise ValueError("correction is too large")
                     return self._send(200, save_chat_feedback(
-                        db_path, str(b.get("message_id", "")), str(b.get("rating", "")), correction))
+                        db_path, str(b.get("message_id", "")), str(b.get("rating", "")), correction,
+                        allow_training=bool(b.get("allow_training", False))))
                 if path == "/api/chat":
                     from .workspace import add_message, get_conversation
                     cid = str(b.get("conversation_id", ""))
