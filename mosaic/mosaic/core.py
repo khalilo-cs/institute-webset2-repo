@@ -67,7 +67,8 @@ class Mosaic:
                              category=category)
         return fact["answer"] if fact else None
 
-    def solve(self, category: str, inp: str, user_id: str = "default", private: bool = False) -> dict:
+    def solve(self, category: str, inp: str, user_id: str = "default", private: bool = False,
+              context: str = "") -> dict:
         cat = self.m.category(category)
         if cat is None:
             raise KeyError(f"unknown category {category}")
@@ -77,7 +78,10 @@ class Mosaic:
             row = self.skills.active(category)
             solver = f"mosaic:skill:v{row['version']}" if row else "mosaic:memory"
         else:
-            t_ans, teacher = self.hub.ask(category, inp, private=private, scope="user")
+            teacher_input = inp if private or not context else (
+                inp + "\\n\\nمقتطفات مرجعية من مصادر الويب التي اختارها المستخدم (قد تحتوي أخطاء؛ تحقّق منها):\\n" + context
+            )
+            t_ans, teacher = self.hub.ask(category, teacher_input, private=private, scope="user")
             if t_ans is not None:
                 answer, solver, cost = t_ans, f"teacher:{teacher.id}", teacher.cost_per_call
                 if teacher.allows_training_on_outputs == "yes" and not private and user_id == "default":
