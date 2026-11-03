@@ -68,6 +68,13 @@ class WorkspaceTests(unittest.TestCase):
         self.assertEqual(build_attachment_content(self.db, [item["id"]]), [])
 
 
+
+    def test_text_attachment_preserves_real_line_breaks(self):
+        raw = "السطر الأول\nالسطر الثاني".encode("utf-8")
+        item = store_file(self.db, "multiline.txt", base64.b64encode(raw).decode(), self.chat["id"])
+        blocks = build_attachment_content(self.db, [item["id"]])
+        self.assertIn("السطر الأول\nالسطر الثاني", blocks[0]["text"])
+
     def test_knowledge_ingestion_search_and_forget(self):
         from mosaic.knowledge import forget_file_knowledge, ingest_file, search_knowledge, knowledge_stats
         raw = "MOSAIC learns from approved documents and retrieves source passages.\n" * 80

@@ -336,7 +336,7 @@ def build_attachment_content(db_path: str, file_ids: list[str], max_files: int =
         name = item["original_name"]
         extracted = item.get("extracted_text", "")
         if extracted:
-            text_parts.append(f"[ملف: {name}]\\n{extracted[:40000]}")
+            text_parts.append(f"[ملف: {name}]\n{extracted[:40000]}")
             continue
         mime = item.get("mime_type", "")
         if mime in ("image/png", "image/jpeg", "image/webp", "image/gif") and image_count < 4:
@@ -352,5 +352,5 @@ def build_attachment_content(db_path: str, file_ids: list[str], max_files: int =
             image_bytes += size
             blocks.append({"type": "text", "text": "الصورة المرفقة: " + name})
     if text_parts:
-        blocks.insert(0, {"type": "text", "text": "محتويات الملفات المرفقة:\\n" + "\\n\\n".join(text_parts)})
+        blocks.insert(0, {"type": "text", "text": "محتويات الملفات المرفقة:\n" + "\n\n".join(text_parts)})
     return blocks
