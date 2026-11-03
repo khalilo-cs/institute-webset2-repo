@@ -261,14 +261,14 @@ $("phonefiles").onchange = async (event) => {
 };
 $("fileask").onclick = () => {
   const q = $("filequestion").value.trim();
-  const terms = q.toLowerCase().split(/\\s+/).filter(x => x.length > 2);
+  const terms = q.toLowerCase().split(/\s+/).filter(x => x.length > 2);
   const box = $("fileoutput"); box.replaceChildren();
   if (!selectedFileTexts.length) { box.textContent = "اختر ملفات نصية أولاً."; return; }
   selectedFileTexts.forEach(f => {
-    const lines = f.text.split(/\\r?\\n/);
+    const lines = f.text.split(/\r?\n/);
     const matches = lines.filter(line => !terms.length || terms.some(term => line.toLowerCase().includes(term))).slice(0, 8);
     const item = el("div", null, "resultitem");
-    item.append(el("b", f.name), el("pre", matches.join("\\n") || "لم توجد أسطر مطابقة."));
+    item.append(el("b", f.name), el("pre", matches.join("\n") || "لم توجد أسطر مطابقة."));
     box.appendChild(item);
   });
 };
