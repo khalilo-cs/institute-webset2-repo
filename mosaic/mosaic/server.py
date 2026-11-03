@@ -53,6 +53,19 @@ def make_handler(mo: Mosaic):
                 return self._send(200, (STATIC / "index.html").read_bytes(), "text/html; charset=utf-8")
             if path == "/app.js":
                 return self._send(200, (STATIC / "app.js").read_bytes(), "text/javascript; charset=utf-8")
+            if path == "/api/provider/status":
+                local_url = os.environ.get("MOSAIC_LOCAL_BASE_URL", "").strip()
+                cloud_ready = bool(os.environ.get("MOSAIC_CLOUD_BASE_URL", "").strip()
+                                   and os.environ.get("MOSAIC_CLOUD_API_KEY", "").strip()
+                                   and os.environ.get("MOSAIC_CLOUD_MODEL", "").strip())
+                return self._send(200, {
+                    "local_configured": bool(local_url),
+                    "local_model": os.environ.get("MOSAIC_LOCAL_MODEL", "qwen2.5:7b") if local_url else None,
+                    "cloud_configured": cloud_ready,
+                    "cloud_model": os.environ.get("MOSAIC_CLOUD_MODEL") if cloud_ready else None,
+                    "private_mode": "local_only",
+                    "note": "API keys are never returned by this endpoint."
+                })
             if path == "/api/dashboard":
                 return self._send(200, mo.dashboard())
             if path == "/api/web-sources":
