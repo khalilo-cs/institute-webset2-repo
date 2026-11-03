@@ -301,13 +301,28 @@ function renderChatMessages(messages) {
   box.scrollTop = box.scrollHeight;
 }
 async function loadConversationList() {
-  const r = await api("/api/conversations");
+  const query = $("chatsearch") ? $("chatsearch").value.trim() : "";
+  const r = await api("/api/conversations" + (query ? "?q=" + encodeURIComponent(query) : ""));
   const box = $("conversationlist"); box.replaceChildren();
   (r.conversations || []).forEach(c => {
-    const b = el("button", c.title + " · " + c.message_count, "btn alt");
-    b.style.width = "100%"; b.style.textAlign = "start"; b.style.margin = "4px 0";
-    b.onclick = () => openConversation(c.id);
-    box.appendChild(b);
+    const row = el("div", null, "row");
+    const open = el("button", c.title + " · " + c.message_count, "btn alt");
+    open.style.flex = "1"; open.style.textAlign = "start"; open.onclick = () => openConversation(c.id);
+    const rename = el("button", "✎", "btn alt");
+    rename.title = "إعادة تسمية";
+    rename.onclick = async () => {
+      const title = prompt("اسم المحادثة", c.title);
+      if (title !== null) { await api("/api/conversations/" + c.id + "/rename", {title}); await loadConversationList(); }
+    };
+    const remove = el("button", "×", "btn bad");
+    remove.title = "حذف المحادثة";
+    remove.onclick = async () => {
+      if (!confirm("حذف هذه المحادثة؟")) return;
+      await api("/api/conversations/" + c.id + "/delete", {});
+      if (activeConversationId === c.id) { activeConversationId = null; await createChat(); }
+      await loadConversationList();
+    };
+    row.append(open, rename, remove); box.appendChild(row);
   });
 }
 async function openConversation(cid) {
@@ -319,8 +334,10 @@ async function openConversation(cid) {
   attachedFileIds = [];
   $("chatattachments").replaceChildren();
   (c.files || []).forEach(f => {
-    const p = el("span", f.original_name + " · " + f.mime_type, "filepill");
-    $("chatattachments").appendChild(p);
+    const a = el("a", f.original_name + " · " + f.mime_type, "filepill");
+    a.href = "/api/files/" + encodeURIComponent(f.id);
+    a.target = "_blank"; a.rel = "noopener noreferrer";
+    $("chatattachments").appendChild(a);
   });
   await loadConversationList();
 }
@@ -413,3 +430,5 @@ document.querySelectorAll("#tabs button").forEach(b => b.addEventListener("click
     else await createChat();
   } catch (e) { $("chatmessages").textContent = "تعذر تهيئة المحادثات: " + e.message; }
 })();
+
+$("chatsearch").addEventListener("input", () => loadConversationList().catch(() => {}));
