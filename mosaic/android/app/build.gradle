@@ -1,0 +1,51 @@
+plugins {
+    id "com.android.application"
+    id "com.chaquo.python"
+}
+
+android {
+    namespace "ai.mosaic.mobile"
+    compileSdk 36
+
+    defaultConfig {
+        applicationId "ai.mosaic.mobile"
+        minSdk 24
+        targetSdk 36
+        versionCode 1
+        versionName "0.1.0"
+
+        // Python 3.13 is available for 64-bit Android ABIs.
+        ndk {
+            abiFilters "arm64-v8a", "x86_64"
+        }
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix ".debug"
+            versionNameSuffix "-debug"
+        }
+        release {
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+chaquopy {
+    defaultConfig {
+        version = "3.13"
+    }
+
+    // Use the existing repository package directly:
+    // ../../ is the mosaic/ project root and contains mosaic/__init__.py.
+    sourceSets {
+        main {
+            srcDir("../../")
+        }
+    }
+}
