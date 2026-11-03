@@ -78,6 +78,7 @@ def _consented_rows(db_path: str) -> list[dict[str, Any]]:
             digest = hashlib.sha256((prompt + "\0" + answer).encode("utf-8")).hexdigest()
             rows.append({
                 "message_id": item["message_id"],
+                "conversation_id": item["conversation_id"],
                 "created_at": item["created_at"],
                 "prompt": prompt,
                 "answer": answer,
@@ -98,10 +99,24 @@ def export_consented_feedback(db_path: str, output_dir: str,
     if not 0.05 <= float(eval_fraction) <= 0.5:
         raise ValueError("eval_fraction must be between 0.05 and 0.5")
     rows = _consented_rows(db_path)
-    rows.sort(key=lambda x: hashlib.sha256(x["pair_hash"].encode()).hexdigest())
-    eval_count = max(1, round(len(rows) * eval_fraction)) if len(rows) >= 2 else 0
-    eval_rows = rows[:eval_count]
-    train_rows = rows[eval_count:]
+    conversation_ids = sorted({row["conversation_id"] for row in rows if row.get("conversation_id")})
+    if len(conversation_ids) >= 2:
+        ordered_conversations = sorted(
+            conversation_ids,
+            key=lambda value: hashlib.sha256(("mosaic-eval:" + value).encode()).hexdigest()
+        )
+        eval_count = max(1, min(len(ordered_conversations) - 1,
+                                round(len(ordered_conversations) * eval_fraction)))
+        eval_conversations = set(ordered_conversations[:eval_count])
+        eval_rows = [row for row in rows if row["conversation_id"] in eval_conversations]
+        train_rows = [row for row in rows if row["conversation_id"] not in eval_conversations]
+        split_strategy = "conversation"
+    else:
+        rows.sort(key=lambda x: hashlib.sha256(x["pair_hash"].encode()).hexdigest())
+        eval_count = max(1, round(len(rows) * eval_fraction)) if len(rows) >= 2 else 0
+        eval_rows = rows[:eval_count]
+        train_rows = rows[eval_count:]
+        split_strategy = "example_hash_single_conversation" if len(rows) >= 2 else "none"
     destination = Path(output_dir).expanduser().resolve()
     destination.mkdir(parents=True, exist_ok=True)
 
@@ -130,6 +145,7 @@ def export_consented_feedback(db_path: str, output_dir: str,
         "total_examples": len(rows),
         "train_examples": len(train_rows),
         "eval_examples": len(eval_rows),
+        "split_strategy": split_strategy,
         "dataset_sha256": dataset_digest,
         "automatic_upload": False,
         "automatic_training": False,
