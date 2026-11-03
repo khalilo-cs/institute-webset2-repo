@@ -42,7 +42,7 @@ class TextExtractor(HTMLParser):
         if tag in self.SKIP and self.skip: self.skip -= 1
         if tag == "title": self.in_title = False
     def handle_data(self, data):
-        text = re.sub(r"\\s+", " ", data).strip()
+        text = re.sub(r"\s+", " ", data).strip()
         if not text: return
         if self.in_title: self.title.append(text)
         if not self.skip: self.parts.append(text)
@@ -68,9 +68,19 @@ def _public_url(url: str) -> str:
     return urllib.parse.urlunsplit((p.scheme, p.netloc, p.path or "/", p.query, ""))
 
 
+class SafeRedirectHandler(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        # Validate every redirect before following it, preventing redirects to local services.
+        safe = _public_url(urllib.parse.urljoin(req.full_url, newurl))
+        return super().redirect_request(req, fp, code, msg, headers, safe)
+
+
+SAFE_OPENER = urllib.request.build_opener(SafeRedirectHandler)
+
+
 def _fetch(url: str):
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Accept": "text/html,application/xhtml+xml"})
-    with urllib.request.urlopen(req, timeout=TIMEOUT) as response:
+    with SAFE_OPENER.open(req, timeout=TIMEOUT) as response:
         ctype = response.headers.get_content_type()
         if ctype not in ("text/html", "application/xhtml+xml"):
             return None
@@ -88,7 +98,7 @@ def _robots_allows(root: str, url: str) -> bool:
     parser.set_url(robots_url)
     try:
         req = urllib.request.Request(robots_url, headers={"User-Agent": USER_AGENT})
-        with urllib.request.urlopen(req, timeout=5) as r:
+        with SAFE_OPENER.open(req, timeout=5) as r:
             parser.parse(r.read(256_000).decode("utf-8", errors="replace").splitlines())
         return parser.can_fetch(USER_AGENT, url)
     except Exception:
@@ -130,7 +140,7 @@ def learn_website(start_url: str, db_path: str, max_pages: int = MAX_PAGES):
                 final_url = _public_url(final_url)
                 parser = TextExtractor()
                 parser.feed(html)
-                text = re.sub(r"\\n{3,}", "\\n\\n", "\\n".join(parser.parts)).strip()
+                text = re.sub(r"\n{3,}", "\n\n", "\n".join(parser.parts)).strip()
                 if not text: continue
                 title = " ".join(parser.title)[:300] or final_url
                 digest = hashlib.sha256(text.encode("utf-8")).hexdigest()
@@ -165,7 +175,7 @@ def list_sources(db_path: str):
 
 
 def search_knowledge(query: str, db_path: str, limit: int = 5):
-    terms = [x.lower() for x in re.findall(r"[\\w\\u0600-\\u06ff]{3,}", query)[:12]]
+    terms = [x.lower() for x in re.findall(r"[\w\u0600-\u06ff]{3,}", query)[:12]]
     if not terms: return []
     conn = _db(db_path)
     try:
