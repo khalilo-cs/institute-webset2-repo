@@ -68,6 +68,29 @@ def make_handler(mo: Mosaic):
             if path == "/api/training/status":
                 from .training import training_status
                 return self._send(200, training_status(os.environ.get("MOSAIC_DB", "mosaic.db")))
+            if path == "/api/training/download":
+                from .training import training_status
+                from io import BytesIO
+                import zipfile
+                status = training_status(os.environ.get("MOSAIC_DB", "mosaic.db"))
+                data_dir = Path(status["data_dir"])
+                required = ("train.jsonl", "eval.jsonl", "manifest.json")
+                if not status["dataset_prepared"] or not all((data_dir / name).is_file() for name in required):
+                    return self._send(404, {"error": "training dataset has not been prepared"})
+                memory_file = BytesIO()
+                with zipfile.ZipFile(memory_file, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+                    for name in required:
+                        archive.write(data_dir / name, arcname=name)
+                payload = memory_file.getvalue()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/zip")
+                self.send_header("Content-Length", str(len(payload)))
+                self.send_header("Content-Disposition", 'attachment; filename="mosaic-training-data.zip"')
+                self.send_header("Cache-Control", "no-store")
+                self.send_header("X-Content-Type-Options", "nosniff")
+                self.end_headers()
+                self.wfile.write(payload)
+                return
             if path == "/api/provider/status":
                 local_url = os.environ.get("MOSAIC_LOCAL_BASE_URL", "").strip()
                 cloud_ready = bool(os.environ.get("MOSAIC_CLOUD_BASE_URL", "").strip()
