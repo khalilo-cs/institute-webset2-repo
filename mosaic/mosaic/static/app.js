@@ -313,7 +313,7 @@ function renderChatMessages(messages) {
         if (correction === null) return;
         if (!correction.trim()) { alert("اكتب التصحيح أولاً."); return; }
         const allowTraining = confirm(
-          "هل تسمح باستخدام هذا التصحيح تحديداً في تدريب محلي لمحوّل MOSAIC؟\\n\\n" +
+          "هل تسمح باستخدام هذا التصحيح تحديداً في تدريب محلي لمحوّل MOSAIC؟\n\n" +
           "لن تُرسل بياناته إلى مزوّد سحابي. اختر إلغاءً للاحتفاظ به للبحث فقط دون تدريب."
         );
         try {
