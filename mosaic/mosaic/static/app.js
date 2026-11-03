@@ -590,11 +590,12 @@ $("trainingprepare").onclick = async () => {
       "# CPU-only PyTorch (إذا كان لديك NVIDIA GPU، ثبّت إصدار CUDA المطابق بدلاً من هذا السطر)\n" +
       "python -m pip install torch --index-url https://download.pytorch.org/whl/cpu\n" +
       "python -m pip install -r training-requirements.txt\n" +
-      "python -m mosaic.training train --data " + psQuote(r.output_dir) +
-      " --output " + psQuote(r.output_dir.replace(/mosaic-training-data$/, "mosaic-adapters/mosaic-lora")) +
+      "# فك ضغط mosaic-training-data.zip إلى هذا المجلد أولاً: .\\mosaic-training-data\\n" +
+      "python -m mosaic.training train --data " + psQuote(".\\mosaic-training-data") +
+      " --output " + psQuote(".\\mosaic-adapters\\mosaic-lora") +
       " --model " + psQuote(selectedModel);
     $("trainingcommand").textContent = mosaicTrainingCommands;
-    const adapterPath = r.output_dir.replace(/mosaic-training-data$/, "mosaic-adapters/mosaic-lora");
+    const adapterPath = ".\\mosaic-adapters\\mosaic-lora";
     $("trainingserve").textContent =
       "# Terminal 1: start the local model (after training completes)\n" +
       "cd mosaic\n" +
