@@ -76,6 +76,7 @@ The product direction is **Android + Windows**, with a **hybrid local/cloud mode
 Local-first (for example, Ollama exposing an OpenAI-compatible API):
 
 ```powershell
+cd mosaic
 $env:MOSAIC_LOCAL_BASE_URL="http://127.0.0.1:11434/v1"
 $env:MOSAIC_LOCAL_MODEL="qwen2.5:7b"
 python -m mosaic serve --db "$env:LOCALAPPDATA\\MOSAIC\\mosaic.sqlite3"
