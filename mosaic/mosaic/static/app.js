@@ -532,6 +532,7 @@ async function loadTrainingStatus() {
       " · تصحيحات محفوظة للاسترجاع فقط: " + s.corrections_not_consented +
       (s.dataset_prepared ? " · مجموعة بيانات مجهزة: " + s.dataset.total_examples + " مثال" : "") +
       (s.adapter_trained ? " · يوجد تقرير تدريب سابق" : "");
+    $("trainingdownload").disabled = !s.dataset_prepared;
     if (s.adapter_trained) {
       const r = s.training_report;
       $("trainingserve").textContent =
@@ -554,6 +555,7 @@ $("trainingprepare").onclick = async () => {
     $("trainingresult").textContent =
       "تم تجهيز " + r.total_examples + " مثالاً: " + r.train_examples +
       " للتدريب و" + r.eval_examples + " للاختبار المستقل. المسار: " + r.output_dir;
+    $("trainingdownload").disabled = false;
     mosaicTrainingCommands =
       "cd mosaic\n" +
       "# CPU-only PyTorch (إذا كان لديك NVIDIA GPU، ثبّت إصدار CUDA المطابق بدلاً من هذا السطر)\n" +
@@ -591,3 +593,7 @@ document.querySelectorAll("#tabs button").forEach(b => {
     if (b.dataset.t === "training") loadTrainingStatus();
   });
 });
+
+$("trainingdownload").onclick = () => {
+  window.location.href = "/api/training/download";
+};
