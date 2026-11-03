@@ -13,6 +13,15 @@ header{padding:14px 16px;border-bottom:1px solid var(--line);background:var(--ca
 header h1{margin:0;font-size:20px;letter-spacing:.5px}
 header .sub{color:var(--muted);font-size:13px}
 nav{display:flex;gap:6px;flex-wrap:wrap;padding:10px 16px}
+.chatlayout{display:grid;grid-template-columns:minmax(210px,260px) minmax(0,1fr);gap:12px;min-height:65vh}
+.chatlist{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;overflow:auto}
+.chatmain{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;min-height:65vh}
+.chatmessages{flex:1;overflow:auto;display:flex;flex-direction:column;gap:10px;padding:8px 0}
+.message{padding:10px 12px;border-radius:12px;max-width:92%;white-space:pre-wrap;overflow-wrap:anywhere}
+.message.user{background:var(--chip);align-self:flex-start}
+.message.assistant{background:var(--bg);border:1px solid var(--line);align-self:flex-end}
+.filepill{font-size:12px;padding:4px 8px;background:var(--chip);border-radius:8px;margin:3px;display:inline-block}
+@media(max-width:700px){.chatlayout{grid-template-columns:1fr}.chatlist{max-height:190px}.chatmain{min-height:60vh}}
 nav button{border:1px solid var(--line);background:var(--card);color:var(--text);padding:6px 12px;border-radius:8px;cursor:pointer}
 nav button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
 main{padding:0 16px 40px;max-width:1100px;margin:0 auto}
@@ -51,7 +60,8 @@ textarea{resize:vertical}
   <span id="net" class="chip"></span>
 </header>
 <nav id="tabs">
-  <button data-t="dash" class="on">لوحة إثبات التطور</button>
+  <button data-t="chat" class="on">المحادثات</button>
+  <button data-t="dash">لوحة إثبات التطور</button>
   <button data-t="task">المهام</button>
   <button data-t="approve">الموافقات</button>
   <button data-t="teach">تعليم</button>
@@ -63,7 +73,26 @@ textarea{resize:vertical}
   <button data-t="media">الصور والفيديو</button>
 </nav>
 <main>
-  <section id="dash" class="on">
+  <section id="chat" class="on">
+    <div class="chatlayout">
+      <aside class="chatlist">
+        <button class="btn" id="newchat" style="width:100%">＋ محادثة جديدة</button>
+        <div id="conversationlist"></div>
+      </aside>
+      <div class="chatmain">
+        <div class="row" style="justify-content:space-between"><strong id="chatheading">محادثة جديدة</strong><span id="chatprovider" class="note"></span></div>
+        <div id="chatmessages" class="chatmessages" aria-live="polite"></div>
+        <div id="chatattachments"></div>
+        <label>إرفاق ملفات (كل الامتدادات)</label>
+        <input id="chatfiles" type="file" multiple>
+        <textarea id="chatinput" rows="3" placeholder="اسأل MOSAIC أي شيء…"></textarea>
+        <label class="row"><input id="chatprivate" type="checkbox" style="width:auto"> محادثة خاصة: محلي فقط، دون بحث ويب أو مزود سحابي</label>
+        <div class="row"><button class="btn" id="chatsend">إرسال</button><button class="btn alt" id="chatclearfiles">إزالة المرفقات المحددة</button></div>
+        <p class="note">الملفات تُحفظ كمرفقات حتى لو لم يتوفر محلل لتنسيقها. لا يتم تشغيل الملفات أو تنفيذ محتوياتها.</p>
+      </div>
+    </div>
+  </section>
+  <section id="dash">
     <div class="row"><button class="btn" id="learn">تشغيل دورة تعلم</button><span id="learnmsg" class="note"></span></div>
     <div class="grid" id="kpis" style="margin-top:12px"></div>
     <div class="card"><h3>الفئات: الأداء على مهام مستقلة والاستقلال عن المعلّم</h3><div class="tw"><table id="cats"></table></div>
@@ -143,8 +172,8 @@ textarea{resize:vertical}
   <section id="phone">
     <div class="card">
       <h3>استكشاف ملفات الهاتف بإذنك</h3>
-      <p class="note">اختر الملفات التي تسمح لـ MOSAIC بقراءتها. لا يوجد مسح خفي للهاتف. هذه النسخة تعرض النصوص التي تختارها؛ دعم PDF والصور والفهرسة العميقة سيضاف في مرحلة لاحقة.</p>
-      <label>اختيار ملفات نصية</label><input id="phonefiles" type="file" multiple accept=".txt,.md,.csv,.json,.log,text/plain,text/markdown,text/csv,application/json">
+      <p class="note">اختر الملفات التي تسمح لـ MOSAIC بقراءتها. لا يوجد مسح خفي للهاتف. يمكن رفع جميع الامتدادات وتخزينها بأمان. استخراج النص متاح للتنسيقات التي لها محللات؛ أما الصوت والصور والفيديو والملفات الثنائية فتحتاج محركات تحليل متخصصة.</p>
+      <label>اختيار الملفات (كل الامتدادات)</label><input id="phonefiles" type="file" multiple>
       <div id="filelist" class="note"></div>
       <label>اسأل عن محتوى الملفات المختارة</label><textarea id="filequestion" rows="3" placeholder="لخص الملفات أو ابحث عن ..."></textarea>
       <button class="btn" id="fileask">استخراج مقتطفات للإجابة</button>
