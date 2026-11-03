@@ -51,6 +51,9 @@ def syncMosaicPython = tasks.register("syncMosaicPython", Sync) {
 chaquopy {
     defaultConfig {
         version = "3.13"
+        pip {
+            install "pypdf==5.4.0"
+        }
     }
     sourceSets {
         main {
