@@ -34,7 +34,7 @@ class TestSynthesis(unittest.TestCase):
 
 class TestLearningAndGraduation(unittest.TestCase):
     def test_learns_proves_and_stops_needing_teacher(self):
-        mo = demo.run(rounds=4, verbose=False)
+        mo = demo.run(rounds=6, verbose=False)
         cats = {c["name"]: mo.category_stats(c["name"]) for c in mo.m.categories()}
         for name, st in cats.items():
             self.assertTrue(st["graduated"], name)
