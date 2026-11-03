@@ -135,6 +135,10 @@ refresh();
 let speechRecognition = null;
 function speechAvailable() { return !!(window.SpeechRecognition || window.webkitSpeechRecognition); }
 function say(text) {
+  if (window.AndroidMosaic && typeof window.AndroidMosaic.speak === "function") {
+    window.AndroidMosaic.speak(String(text || ""));
+    return;
+  }
   if (!("speechSynthesis" in window)) return;
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(String(text || ""));
@@ -149,6 +153,11 @@ function fillVoiceCategories() {
   }));
 }
 $("vlisten").onclick = () => {
+  if (window.AndroidMosaic && typeof window.AndroidMosaic.startSpeech === "function") {
+    window.AndroidMosaic.startSpeech();
+    $("vlisten").textContent = "يستمع الآن…";
+    return;
+  }
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) { $("vresult").textContent = "التعرف الصوتي غير مدعوم في WebView هذا الجهاز. يمكنك استخدام لوحة المفاتيح الصوتية في الهاتف ثم إرسال النص."; return; }
   try {
@@ -167,7 +176,10 @@ $("vlisten").onclick = () => {
     $("vlisten").textContent = "يستمع الآن…";
   } catch (e) { $("vresult").textContent = e.message; }
 };
-$("vstop").onclick = () => { if (speechRecognition) speechRecognition.stop(); };
+$("vstop").onclick = () => {
+  if (window.AndroidMosaic && typeof window.AndroidMosaic.stopSpeech === "function") window.AndroidMosaic.stopSpeech();
+  if (speechRecognition) speechRecognition.stop();
+};
 $("vsend").onclick = async () => {
   const input = $("vinput").value.trim();
   if (!input) { $("vresult").textContent = "تحدث أو اكتب سؤالك أولاً."; return; }
