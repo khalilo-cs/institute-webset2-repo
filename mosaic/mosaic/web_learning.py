@@ -120,13 +120,14 @@ def _db(path: str):
 
 
 def learn_website(start_url: str, db_path: str, max_pages: int = MAX_PAGES):
+    max_pages = max(1, min(int(max_pages), MAX_PAGES))
     start = _public_url(start_url)
     root_parts = urllib.parse.urlsplit(start)
     origin = (root_parts.scheme, root_parts.netloc)
     queue, seen, saved, skipped = [start], set(), [], []
     conn = _db(db_path)
     try:
-        while queue and len(seen) < min(max_pages, MAX_PAGES):
+        while queue and len(seen) < max_pages:
             current = queue.pop(0)
             if current in seen: continue
             seen.add(current)
@@ -167,7 +168,7 @@ def learn_website(start_url: str, db_path: str, max_pages: int = MAX_PAGES):
                 skipped.append({"url": current, "reason": str(exc)[:240]})
         conn.commit()
         return {"ok": True, "pages_saved": len(saved), "pages_skipped": len(skipped),
-                "pages": saved, "skipped": skipped, "max_pages": min(max_pages, MAX_PAGES)}
+                "pages": saved, "skipped": skipped, "max_pages": max_pages}
     finally:
         conn.close()
 
