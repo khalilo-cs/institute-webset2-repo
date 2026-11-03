@@ -55,3 +55,55 @@ python -m unittest discover -s tests -t .                  # الاختبارا�
 - التكييف الفعلي لأوزان النماذج (النوع E: LoRA وما شابهها) غير مُنفّذ بعد. هو المرحلة P5 في البرومبت.
 - تطبيق Android الأصلي لم يُبنَ هنا لأن بيئة البناء لا تحتوي Android SDK. النواة مكتوبة بـ Python القياسية بلا اعتماديات حتى تعمل على الهاتف عبر Chaquopy أو Termux، والواجهة تعمل الآن من متصفح الهاتف.
 - الخادم مخصص للتشغيل المحلي (يستمع على 127.0.0.1) ولا يحتوي على تسجيل دخول بعد.
+
+
+## MOSAIC platform roadmap and current workspace foundation
+
+The product direction is **Android + Windows**, with a **hybrid local/cloud model strategy** and universal file intake.
+
+### Implemented in the workspace foundation
+- Persistent conversations and messages in SQLite, with conversation titles, archive/rename/delete API operations.
+- Chat workspace UI with conversation history, new conversations, message composer and attachments.
+- Arbitrary file extensions can be uploaded and stored as opaque binary attachments (20 MiB per file). Files are never executed.
+- Bounded text extraction for common text/code formats; best-effort extraction for Office Open XML and PDF when a PDF parser is installed; archive manifest listing for ZIP/JAR/APK.
+- File SHA-256 fingerprints, MIME detection, per-file metadata and local storage.
+- Hybrid OpenAI-compatible chat provider routing: local endpoint is preferred; cloud is fallback. Private chats are local-only.
+- Windows desktop shell using the same local server and UI; Windows packaging workflow creates `MOSAIC.exe`.
+- Android WebView continues to use the same Python server and web UI.
+
+### Configure the hybrid model router (Windows / local server)
+
+Local-first (for example, Ollama exposing an OpenAI-compatible API):
+
+```powershell
+$env:MOSAIC_LOCAL_BASE_URL="http://127.0.0.1:11434/v1"
+$env:MOSAIC_LOCAL_MODEL="qwen2.5:7b"
+python -m mosaic serve --db "$env:LOCALAPPDATA\\MOSAIC\\mosaic.sqlite3"
+```
+
+Cloud fallback (compatible endpoint and credentials supplied by the operator):
+
+```powershell
+$env:MOSAIC_CLOUD_BASE_URL="https://your-provider.example/v1"
+$env:MOSAIC_CLOUD_API_KEY="set-this-in-your-secret-store"
+$env:MOSAIC_CLOUD_MODEL="your-model-id"
+```
+
+Do not commit keys, put them in the APK, or paste them into source files. The Windows shell currently reads provider configuration from its process environment. A secure in-app credential vault for Android is a separate upcoming milestone.
+
+### File support: honest compatibility contract
+"Accept all files" means MOSAIC accepts and safely stores any filename/extension as a non-executable attachment, subject to the 20 MiB limit. It does **not** claim that every file can already be semantically understood. Text/code formats are extracted; Office Open XML and PDF use best-effort parsers; images need OCR/vision, audio needs speech transcription, video needs frame/audio extraction, and proprietary/binary formats need dedicated adapters. Unsupported files remain downloadable attachments with metadata and hashes.
+
+### Security boundaries
+- Never execute uploaded files, scripts, macros or archive contents.
+- File size is limited; archive extraction is bounded by member count and expanded byte limits.
+- Treat file and website content as untrusted prompt data.
+- Private chats use only the configured local provider; they do not fall back to cloud.
+- The current local HTTP server binds to loopback by default. Do not expose it to a network without authentication, TLS and authorization.
+
+### Next milestones
+1. Secure provider settings and model status UI for Windows and Android.
+2. Multimodal adapters: image understanding/OCR, PDF page rendering, audio transcription, video frame extraction.
+3. Image and video generation providers with real job status, outputs and usage limits.
+4. Cross-device account sync, encrypted backups and conversation search.
+5. Permissioned device search through Android Storage Access Framework and indexed user-selected folders.
