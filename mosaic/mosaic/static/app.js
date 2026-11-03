@@ -553,6 +553,11 @@ async function loadTrainingStatus() {
       (s.dataset_prepared ? " · مجموعة بيانات مجهزة: " + s.dataset.total_examples + " مثال" : "") +
       (s.adapter_trained ? " · يوجد تقرير تدريب سابق" : "");
     $("trainingdownload").disabled = !s.dataset_prepared;
+    if (!s.dataset_prepared) {
+      mosaicTrainingCommands = "";
+      $("trainingcopy").disabled = true;
+      $("trainingcopy").textContent = "نسخ أوامر التدريب";
+    }
     if (s.adapter_trained) {
       const r = s.training_report;
       $("trainingserve").textContent =
