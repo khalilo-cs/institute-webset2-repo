@@ -1,0 +1,6 @@
+.gradle/
+build/
+app/build/
+python-src/
+local.properties
+*.iml
