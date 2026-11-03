@@ -8,6 +8,10 @@ on:
       - ".github/workflows/mosaic-android.yml"
   workflow_dispatch:
 
+concurrency:
+  group: mosaic-android-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
