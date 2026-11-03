@@ -248,5 +248,13 @@ def save_chat_feedback(db_path: str, message_id: str, rating: str, correction: s
         con.commit()
     finally:
         con.close()
+    # Any change to consent or correction invalidates previously exported data.
+    data_dir = Path(db_path).expanduser().resolve().parent / "mosaic-training-data"
+    invalidated = False
+    for name in ("train.jsonl", "eval.jsonl", "manifest.json"):
+        target = data_dir / name
+        if target.is_file():
+            target.unlink()
+            invalidated = True
     return {"ok": True, "rating": rating, "correction_indexed": bool(correction),
-            "allow_training": opted_in}
+            "allow_training": opted_in, "training_dataset_invalidated": invalidated}
