@@ -1,0 +1,45 @@
+name: MOSAIC Windows Desktop
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "mosaic/**"
+      - ".github/workflows/mosaic-windows.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: mosaic-windows-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install desktop dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r mosaic/desktop/requirements.txt
+      - name: Validate source and tests
+        shell: pwsh
+        run: |
+          python -m compileall -q mosaic/mosaic mosaic/desktop
+          node --check mosaic/mosaic/static/app.js
+          python -m unittest discover -s mosaic/tests -t mosaic
+      - name: Package Windows application
+        run: |
+          pyinstaller --noconfirm --clean --onefile --windowed --name MOSAIC --paths mosaic --add-data "mosaic/mosaic/static;mosaic/static" --collect-all webview mosaic/desktop/launcher.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mosaic-windows-x64
+          path: dist/MOSAIC.exe
+          if-no-files-found: error
+          retention-days: 14
