@@ -195,6 +195,13 @@ def make_handler(mo: Mosaic):
                 if path == "/api/knowledge/forget":
                     from .knowledge import forget_file_knowledge
                     return self._send(200, {"deleted_chunks": forget_file_knowledge(db_path, str(b.get("file_id", "")))})
+                if path == "/api/chat/feedback":
+                    from .knowledge import save_chat_feedback
+                    correction = str(b.get("correction", "")).strip()
+                    if len(correction) > 20_000:
+                        raise ValueError("correction is too large")
+                    return self._send(200, save_chat_feedback(
+                        db_path, str(b.get("message_id", "")), str(b.get("rating", "")), correction))
                 if path == "/api/chat":
                     from .workspace import add_message, get_conversation
                     cid = str(b.get("conversation_id", ""))
@@ -237,8 +244,10 @@ def make_handler(mo: Mosaic):
                         answer, provider = ("تم حفظ رسالتك، لكن لم يتم إعداد مزود نموذج محلي/سحابي بعد. أضف إعدادات المزود لتفعيل الردود. المحادثة الخاصة لا تستخدم السحابة.", "not-configured")
                     sources = [{"title": x["source"], "file_id": x["file_id"], "chunk": x["chunk"]} for x in personal_knowledge]
                     sources += [{"title": x["title"], "url": x["url"]} for x in web_knowledge]
-                    add_message(db_path, cid, "assistant", answer, {"provider": provider, "knowledge_sources": sources})
+                    assistant_message = add_message(db_path, cid, "assistant", answer,
+                                                     {"provider": provider, "knowledge_sources": sources})
                     return self._send(200, {"conversation_id": cid, "answer": answer, "provider": provider,
+                                             "assistant_message_id": assistant_message["id"],
                                              "knowledge_sources": sources})
                 if path == "/api/learn-url":
                     from .web_learning import learn_website
