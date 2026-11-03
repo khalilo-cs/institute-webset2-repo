@@ -82,7 +82,8 @@ def ingest_file(db_path: str, file_id: str, private: bool = False,
     model_provider = ""
     vision_attempted = False
 
-    if not extracted and item.get("mime_type") in VISION_MIME_TYPES:
+    if not extracted and (item.get("mime_type") in VISION_MIME_TYPES or
+                         item.get("extension", "").lower() in {".png", ".jpg", ".jpeg", ".webp", ".gif"}):
         if not allow_vision:
             return {"file_id": file_id, "indexed": 0, "status": "vision_limit_reached"}
         from .workspace import build_attachment_content

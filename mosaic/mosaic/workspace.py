@@ -29,6 +29,10 @@ TEXT_EXTENSIONS = {
     ".log", ".properties", ".gradle", ".dockerfile", ".makefile", ".tex", ".env.example",
 }
 TEXT_MIMES = {"text/plain", "text/csv", "application/json", "application/xml", "text/xml"}
+IMAGE_MIME_BY_EXTENSION = {
+    ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
+    ".webp": "image/webp", ".gif": "image/gif",
+}
 
 
 def _paths(db_path: str):
@@ -241,7 +245,7 @@ def store_file(db_path: str, filename: str, content_base64: str, conversation_id
         raise ValueError(f"File exceeds {MAX_FILE_BYTES // (1024*1024)} MB limit")
     db, root = _paths(db_path)
     ext = Path(filename).suffix.lower()[:24]
-    mime = mimetypes.guess_type(filename)[0] or "application/octet-stream"
+    mime = IMAGE_MIME_BY_EXTENSION.get(ext) or mimetypes.guess_type(filename)[0] or "application/octet-stream"
     text, parser = _extract(data, ext, mime)
     fid = uuid.uuid4().hex
     stored_name = fid + ".bin"
@@ -339,7 +343,8 @@ def build_attachment_content(db_path: str, file_ids: list[str], max_files: int =
             text_parts.append(f"[ملف: {name}]\n{extracted[:40000]}")
             continue
         mime = item.get("mime_type", "")
-        if mime in ("image/png", "image/jpeg", "image/webp", "image/gif") and image_count < 4:
+        mime = IMAGE_MIME_BY_EXTENSION.get(item.get("extension", "").lower(), mime)
+        if mime in IMAGE_MIME_BY_EXTENSION.values() and image_count < 4:
             size = int(item.get("size_bytes", 0))
             if size > 5 * 1024 * 1024 or image_bytes + size > 8 * 1024 * 1024:
                 text_parts.append(f"[الصورة {name}: محفوظة لكن تجاوزت حد الإرسال المرئي]")

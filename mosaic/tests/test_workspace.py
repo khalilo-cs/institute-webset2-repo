@@ -71,6 +71,15 @@ class WorkspaceTests(unittest.TestCase):
 
 
 
+    def test_webp_mime_type_is_platform_independent_and_forwarded_as_image(self):
+        item = store_file(self.db, "sample.webp", base64.b64encode(b"webp-image").decode(), self.chat["id"])
+        self.assertEqual(item["mime_type"], "image/webp")
+        blocks = build_attachment_content(self.db, [item["id"]])
+        self.assertTrue(any(
+            block.get("image_url", {}).get("url", "").startswith("data:image/webp;base64,")
+            for block in blocks
+        ))
+
     def test_text_attachment_preserves_real_line_breaks(self):
         raw = "السطر الأول\nالسطر الثاني".encode("utf-8")
         item = store_file(self.db, "multiline.txt", base64.b64encode(raw).decode(), self.chat["id"])
