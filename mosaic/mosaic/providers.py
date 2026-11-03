@@ -30,7 +30,9 @@ def _request(base_url: str, model: str, messages: list[dict], api_key: str = "")
         headers["Authorization"] = "Bearer " + api_key
     req = urllib.request.Request(url, data=body, headers=headers, method="POST")
     try:
-        with urllib.request.urlopen(req, timeout=90) as response:
+        # Local CPU inference can be substantially slower than a hosted endpoint.
+        timeout = 300 if ("127.0.0.1" in url or "localhost" in url) else 90
+        with urllib.request.urlopen(req, timeout=timeout) as response:
             raw = response.read(4 * 1024 * 1024)
         data = json.loads(raw.decode("utf-8"))
         answer = data["choices"][0]["message"]["content"]
