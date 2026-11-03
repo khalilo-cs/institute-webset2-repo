@@ -77,7 +77,8 @@ def make_handler(mo: Mosaic):
                 item = get_file(os.environ.get("MOSAIC_DB", "mosaic.db"), fid)
                 if not item:
                     return self._send(404, {"error": "file not found"})
-                safe_name = item["original_name"].replace('"', "")
+                import re
+                safe_name = re.sub(r"[^A-Za-z0-9._ -]", "_", item["original_name"]).replace('"', "")[:180] or "download.bin"
                 data = Path(item["download_path"]).read_bytes()
                 self.send_response(200)
                 self.send_header("Content-Type", item["mime_type"])
@@ -154,7 +155,6 @@ def make_handler(mo: Mosaic):
                         if item and item.get("extracted_text"):
                             attachments.append(f"\n[ملف: {item['original_name']}]\n{item['extracted_text'][:30000]}")
                     history = conversation["messages"][-12:]
-                    context = "\n".join(f"{m['role']}: {m['content']}" for m in history)
                     user_text = prompt + ("\n\nمحتوى الملفات المرفقة:\n" + "\n".join(attachments) if attachments else "")
                     add_message(db_path, cid, "user", prompt, {"file_ids": b.get("file_ids", [])})
                     is_private = bool(b.get("private", False))
