@@ -9,6 +9,18 @@ import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
+import android.speech.RecognitionListener;
+import android.speech.RecognizerIntent;
+import android.speech.SpeechRecognizer;
+import android.speech.tts.TextToSpeech;
+import android.content.pm.PackageManager;
+import android.Manifest;
+import android.webkit.JavascriptInterface;
+import android.net.Uri;
+import android.webkit.ValueCallback;
+import android.webkit.WebChromeClient;
+import java.util.ArrayList;
+import java.util.Locale;
 import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
@@ -42,6 +54,12 @@ public final class MainActivity extends Activity {
     private LinearLayout statusPanel;
     private ProgressBar progress;
     private String baseUrl;
+    private SpeechRecognizer speechRecognizer;
+    private TextToSpeech textToSpeech;
+    private boolean pendingSpeechStart = false;
+    private ValueCallback<Uri[]> fileCallback;
+    private static final int REQUEST_AUDIO = 7401;
+    private static final int REQUEST_FILES = 7402;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +71,9 @@ public final class MainActivity extends Activity {
         }
 
         buildScreen();
+        textToSpeech = new TextToSpeech(this, status -> {
+            if (status == TextToSpeech.SUCCESS && textToSpeech != null) textToSpeech.setLanguage(new Locale("ar"));
+        });
         startMosaic();
     }
 
@@ -71,6 +92,27 @@ public final class MainActivity extends Activity {
         settings.setAllowContentAccess(false);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         settings.setSupportZoom(false);
+
+        webView.addJavascriptInterface(new MosaicJsBridge(), "AndroidMosaic");
+        webView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback,
+                                             FileChooserParams params) {
+                if (fileCallback != null) fileCallback.onReceiveValue(null);
+                fileCallback = callback;
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("*/*");
+                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                try {
+                    startActivityForResult(intent, REQUEST_FILES);
+                    return true;
+                } catch (Exception e) {
+                    fileCallback = null;
+                    return false;
+                }
+            }
+        });
 
         webView.setWebViewClient(new WebViewClient() {
             @Override
@@ -122,6 +164,109 @@ public final class MainActivity extends Activity {
                 FrameLayout.LayoutParams.MATCH_PARENT));
 
         setContentView(root);
+    }
+
+    private final class MosaicJsBridge {
+        @JavascriptInterface
+        public void speak(String text) {
+            runOnUiThread(() -> {
+                if (textToSpeech != null) {
+                    textToSpeech.setLanguage(new Locale("ar"));
+                    textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, "mosaic-response");
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public void startSpeech() {
+            runOnUiThread(() -> {
+                if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                    pendingSpeechStart = true;
+                    requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_AUDIO);
+                } else {
+                    beginNativeSpeech();
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public void stopSpeech() {
+            runOnUiThread(() -> {
+                if (speechRecognizer != null) speechRecognizer.stopListening();
+            });
+        }
+    }
+
+    private void beginNativeSpeech() {
+        if (!SpeechRecognizer.isRecognitionAvailable(this)) {
+            webView.evaluateJavascript("document.getElementById('vresult').textContent='خدمة التعرف على الكلام غير متاحة على هذا الجهاز.';", null);
+            return;
+        }
+        if (speechRecognizer != null) speechRecognizer.destroy();
+        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
+        speechRecognizer.setRecognitionListener(new RecognitionListener() {
+            @Override public void onReadyForSpeech(Bundle params) {
+                webView.evaluateJavascript("document.getElementById('vresult').textContent='أستمع إليك الآن…';", null);
+            }
+            @Override public void onBeginningOfSpeech() {}
+            @Override public void onRmsChanged(float rmsdB) {}
+            @Override public void onBufferReceived(byte[] buffer) {}
+            @Override public void onEndOfSpeech() {}
+            @Override public void onError(int error) {
+                webView.evaluateJavascript("document.getElementById('vresult').textContent='انتهى الاستماع أو تعذر فهم الكلام. حاول مجدداً.';", null);
+            }
+            @Override public void onResults(Bundle results) {
+                ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+                if (matches != null && !matches.isEmpty()) {
+                    String safe = JSONObject.quote(matches.get(0));
+                    webView.evaluateJavascript("document.getElementById('vinput').value=" + safe + ";", null);
+                }
+            }
+            @Override public void onPartialResults(Bundle partialResults) {
+                ArrayList<String> matches = partialResults.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+                if (matches != null && !matches.isEmpty()) {
+                    String safe = JSONObject.quote(matches.get(0));
+                    webView.evaluateJavascript("document.getElementById('vinput').value=" + safe + ";", null);
+                }
+            }
+            @Override public void onEvent(int eventType, Bundle params) {}
+        });
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ar");
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, "ar");
+        intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
+        speechRecognizer.startListening(intent);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_AUDIO) {
+            boolean granted = grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
+            if (granted && pendingSpeechStart) beginNativeSpeech();
+            else webView.evaluateJavascript("document.getElementById('vresult').textContent='لم تمنح إذن الميكروفون.';", null);
+            pendingSpeechStart = false;
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_FILES && fileCallback != null) {
+            Uri[] results = null;
+            if (resultCode == RESULT_OK && data != null) {
+                if (data.getClipData() != null) {
+                    int count = data.getClipData().getItemCount();
+                    results = new Uri[count];
+                    for (int i = 0; i < count; i++) results[i] = data.getClipData().getItemAt(i).getUri();
+                } else if (data.getData() != null) {
+                    results = new Uri[]{data.getData()};
+                }
+            }
+            fileCallback.onReceiveValue(results);
+            fileCallback = null;
+        }
     }
 
     private void startMosaic() {
@@ -260,6 +405,9 @@ public final class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (speechRecognizer != null) { speechRecognizer.destroy(); speechRecognizer = null; }
+        if (textToSpeech != null) { textToSpeech.stop(); textToSpeech.shutdown(); textToSpeech = null; }
+        if (fileCallback != null) { fileCallback.onReceiveValue(null); fileCallback = null; }
         if (webView != null) {
             webView.stopLoading();
             webView.destroy();
