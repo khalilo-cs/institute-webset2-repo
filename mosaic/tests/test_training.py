@@ -87,5 +87,19 @@ class TrainingExportTests(unittest.TestCase):
         self.assertTrue(train_conversations.isdisjoint(eval_conversations))
         self.assertEqual(train_conversations | eval_conversations, {train_chat, eval_chat})
 
+
+    def test_withdrawal_invalidates_prepared_dataset(self):
+        _, assistant = self.add_example(21, True)
+        output = Path(self.tmp.name) / "revocation-data"
+        export_consented_feedback(self.db, str(output))
+        self.assertTrue((output / "manifest.json").exists())
+        save_chat_feedback(
+            self.db, assistant["id"], "not_accurate",
+            "التصحيح الموثق للمفهوم رقم 21", allow_training=False
+        )
+        self.assertFalse((output / "manifest.json").exists())
+        self.assertFalse((output / "train.jsonl").exists())
+        self.assertFalse((output / "eval.jsonl").exists())
+
 if __name__ == "__main__":
     unittest.main()
