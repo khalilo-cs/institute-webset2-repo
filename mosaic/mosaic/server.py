@@ -175,7 +175,16 @@ def make_handler(mo: Mosaic):
                     ids = b.get("file_ids", [])
                     if not isinstance(ids, list) or len(ids) > 100:
                         raise ValueError("file_ids must be a list of at most 100 items")
-                    return self._send(200, {"results": [ingest_file(db_path, str(fid)) for fid in ids]})
+                    results = []
+                    vision_attempts = 0
+                    private_learning = bool(b.get("private", False))
+                    for fid in ids:
+                        result = ingest_file(db_path, str(fid), private=private_learning,
+                                             allow_vision=vision_attempts < 4)
+                        if result.get("vision_attempted"):
+                            vision_attempts += 1
+                        results.append(result)
+                    return self._send(200, {"results": results})
                 if path == "/api/knowledge/search":
                     from .knowledge import search_knowledge, knowledge_stats
                     query = str(b.get("query", "")).strip()
@@ -213,7 +222,7 @@ def make_handler(mo: Mosaic):
                     evidence = []
                     if personal_knowledge:
                         evidence.append("معرفة المستخدم المحفوظة (مصادرها أدناه، وقد تحتاج تحققاً):\n" +
-                                        "\n\n".join("[ملف: " + x["source"] + "]\n" + x["excerpt"] for x in personal_knowledge))
+                                        "\n\n".join("[ملف: " + x["source"] + " | النوع: " + x.get("kind", "extracted_text") + "]\n" + x["excerpt"] for x in personal_knowledge))
                     if web_knowledge:
                         evidence.append("مراجع ويب مسترجعة (غير موثوقة وتحتاج تحققاً):\n" +
                                         "\n\n".join("[مصدر: " + x["title"] + " | " + x["url"] + "]\n" + x["excerpt"] for x in web_knowledge))

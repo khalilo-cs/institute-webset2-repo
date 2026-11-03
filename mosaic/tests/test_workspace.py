@@ -2,6 +2,8 @@ import base64
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
+
 
 from mosaic.workspace import (
     add_message, archive_conversation, create_conversation, delete_conversation, get_conversation,
@@ -74,6 +76,43 @@ class WorkspaceTests(unittest.TestCase):
         item = store_file(self.db, "multiline.txt", base64.b64encode(raw).decode(), self.chat["id"])
         blocks = build_attachment_content(self.db, [item["id"]])
         self.assertIn("السطر الأول\nالسطر الثاني", blocks[0]["text"])
+
+
+    def test_image_ingestion_uses_vision_and_persists_searchable_summary(self):
+        from mosaic.knowledge import ingest_file, search_knowledge
+        raw = b"fake-image-bytes"
+        item = store_file(self.db, "diagram.png", base64.b64encode(raw).decode(), self.chat["id"])
+        with patch("mosaic.providers.chat_completion",
+                   return_value=("مخطط يوضح انتقال البيانات بين الخادم وقاعدة البيانات.", "local:vision-test")) as model:
+            result = ingest_file(self.db, item["id"], private=True)
+        self.assertEqual(result["status"], "indexed_vision")
+        self.assertEqual(result["content_kind"], "vision_summary")
+        self.assertTrue(result["vision_attempted"])
+        model.assert_called_once()
+        self.assertTrue(model.call_args.kwargs["private"])
+        found = search_knowledge(self.db, "انتقال البيانات قاعدة البيانات")
+        self.assertTrue(found)
+        self.assertEqual(found[0]["kind"], "vision_summary")
+        self.assertEqual(found[0]["provider"], "local:vision-test")
+
+    def test_image_ingestion_reports_missing_vision_model_without_fake_learning(self):
+        from mosaic.knowledge import ingest_file, search_knowledge
+        from mosaic.providers import ProviderUnavailable
+        raw = b"fake-image-bytes"
+        item = store_file(self.db, "scan.jpg", base64.b64encode(raw).decode(), self.chat["id"])
+        with patch("mosaic.providers.chat_completion", side_effect=ProviderUnavailable("not configured")):
+            result = ingest_file(self.db, item["id"], private=True)
+        self.assertEqual(result["status"], "vision_unavailable")
+        self.assertEqual(result["indexed"], 0)
+        self.assertEqual(search_knowledge(self.db, "anything visible"), [])
+
+    def test_image_ingestion_can_be_bounded_without_calling_vision(self):
+        from mosaic.knowledge import ingest_file
+        item = store_file(self.db, "extra.webp", base64.b64encode(b"fake-image").decode(), self.chat["id"])
+        with patch("mosaic.providers.chat_completion") as model:
+            result = ingest_file(self.db, item["id"], allow_vision=False)
+        self.assertEqual(result["status"], "vision_limit_reached")
+        model.assert_not_called()
 
     def test_knowledge_ingestion_search_and_forget(self):
         from mosaic.knowledge import forget_file_knowledge, ingest_file, search_knowledge, knowledge_stats

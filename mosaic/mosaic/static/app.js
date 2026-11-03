@@ -394,12 +394,21 @@ $("chatfiles").addEventListener("change", async (event) => {
 $("chatlearnfiles").onclick = async () => {
   if (!attachedFileIds.length) { alert("أرفق ملفات أولاً."); return; }
   const button = $("chatlearnfiles");
-  button.disabled = true; button.textContent = "جارٍ الفهرسة…";
+  button.disabled = true; button.textContent = "جارٍ تحليل النصوص والصور…";
   try {
-    const result = await api("/api/knowledge/ingest", {file_ids: attachedFileIds});
+    const result = await api("/api/knowledge/ingest", {
+      file_ids: attachedFileIds, private: $("chatprivate").checked
+    });
     const indexed = result.results.reduce((sum, item) => sum + (item.indexed || 0), 0);
+    const images = result.results.filter(item => item.status === "indexed_vision").length;
+    const visionUnavailable = result.results.filter(item => item.status === "vision_unavailable").length;
+    const limited = result.results.filter(item => item.status === "vision_limit_reached").length;
     const skipped = result.results.filter(item => !item.indexed).length;
-    alert("اكتملت الفهرسة: " + indexed + " مقطعاً. ملفات لم يتوفر لها نص قابل للاستخراج: " + skipped + ". ستُستخدم المعرفة في الأسئلة اللاحقة.");
+    alert("اكتمل التعلم: " + indexed + " مقطعاً، منها " + images +
+      " صورة فُهم محتواها. ملفات تعذر فهمها: " + skipped +
+      (visionUnavailable ? "، تعذر تشغيل نموذج الرؤية لعدد " + visionUnavailable : "") +
+      (limited ? "، تجاوزت الصور الإضافية حد المعالجة " + limited : "") +
+      ". أصبحت المعرفة متاحة للأسئلة اللاحقة.");
   } catch (e) { alert("تعذر التعلم من الملفات: " + e.message); }
   finally { button.disabled = false; button.textContent = "تعلم من الملفات المحددة"; }
 };
