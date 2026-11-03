@@ -321,10 +321,30 @@ function renderChatMessages(messages) {
             message_id: m.id, rating: "not_accurate", correction,
             allow_training: allowTraining
           });
-          controls.replaceChildren(el("span",
+          const status = el("span",
             allowTraining ? "حُفظ التصحيح للمعرفة والتدريب المحلي المصرّح به." :
               "حُفظ التصحيح للاسترجاع فقط، ولم يُصرّح بالتدريب.",
-            "note"));
+            "note");
+          controls.replaceChildren(status);
+          if (allowTraining) {
+            const revoke = el("button", "سحب إذن التدريب", "btn alt");
+            revoke.onclick = async () => {
+              revoke.disabled = true;
+              try {
+                await api("/api/chat/feedback", {
+                  message_id: m.id, rating: "not_accurate", correction,
+                  allow_training: false
+                });
+                controls.replaceChildren(el("span",
+                  "سُحب الإذن وأُبطلت ملفات التدريب المجهزة. بقي التصحيح للاسترجاع فقط.",
+                  "note"));
+              } catch (e) {
+                revoke.disabled = false;
+                alert(e.message);
+              }
+            };
+            controls.appendChild(revoke);
+          }
         } catch (e) { alert(e.message); }
       };
       controls.append(good, bad);
