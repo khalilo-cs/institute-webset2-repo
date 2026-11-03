@@ -294,12 +294,12 @@ def delete_file(db_path: str, fid: str) -> bool:
 
 
 def search_conversations(db_path: str, query: str) -> list[dict]:
-    term = "%" + query.strip().replace("%", "\\%").replace("_", "\\_") + "%"
+    term = "%" + query.strip() + "%"
     with _connect(db_path) as con:
         rows = con.execute(
             "SELECT c.*, (SELECT COUNT(*) FROM chat_messages m WHERE m.conversation_id=c.id) AS message_count "
-            "FROM conversations c WHERE c.archived=0 AND (c.title LIKE ? ESCAPE '\\\\' OR EXISTS "
-            "(SELECT 1 FROM chat_messages m WHERE m.conversation_id=c.id AND m.content LIKE ? ESCAPE '\\\\')) "
+            "FROM conversations c WHERE c.archived=0 AND (c.title LIKE ? OR EXISTS "
+            "(SELECT 1 FROM chat_messages m WHERE m.conversation_id=c.id AND m.content LIKE ?)) "
             "ORDER BY c.updated_at DESC",
             (term, term)).fetchall()
     return [dict(r) for r in rows]
