@@ -1,0 +1,8 @@
+# Optional: install PyTorch separately for your hardware before this file.
+# CPU-only Windows/Linux example:
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+# NVIDIA CUDA users should install the matching PyTorch build from pytorch.org.
+transformers>=4.46,<6
+peft>=0.13,<1
+accelerate>=0.34,<2
+safetensors>=0.4
