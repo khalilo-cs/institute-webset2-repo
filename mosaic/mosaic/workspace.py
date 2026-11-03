@@ -13,6 +13,7 @@ import re
 import sqlite3
 import uuid
 import zipfile
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 from xml.etree import ElementTree as ET
