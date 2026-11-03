@@ -53,6 +53,10 @@ def make_handler(mo: Mosaic):
                 return self._send(200, (STATIC / "app.js").read_bytes(), "text/javascript; charset=utf-8")
             if path == "/api/dashboard":
                 return self._send(200, mo.dashboard())
+            if path == "/api/web-sources":
+                from .web_learning import list_sources
+                db_path = str(Path(os.environ.get("MOSAIC_DB", "mosaic.db")).with_name("mosaic_web_knowledge.sqlite"))
+                return self._send(200, {"sources": list_sources(db_path)})
             if path == "/api/settings":
                 from .memory import DEFAULT_SETTINGS
                 return self._send(200, {k: mo.m.setting(k) for k in DEFAULT_SETTINGS})
@@ -62,6 +66,15 @@ def make_handler(mo: Mosaic):
             path = self.path.split("?", 1)[0]
             try:
                 b = self._body()
+                if path == "/api/learn-url":
+                    from .web_learning import learn_website
+                    url = str(b.get("url", "")).strip()
+                    db_path = str(Path(os.environ.get("MOSAIC_DB", "mosaic.db")).with_name("mosaic_web_knowledge.sqlite"))
+                    return self._send(200, learn_website(url, db_path, int(b.get("max_pages", 8))))
+                if path == "/api/search-knowledge":
+                    from .web_learning import search_knowledge
+                    db_path = str(Path(os.environ.get("MOSAIC_DB", "mosaic.db")).with_name("mosaic_web_knowledge.sqlite"))
+                    return self._send(200, {"results": search_knowledge(str(b.get("query", "")), db_path)})
                 if path == "/api/task":
                     return self._send(200, mo.solve(str(b["category"]), str(b["input"]),
                                                     private=bool(b.get("private", False))))
