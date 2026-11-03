@@ -36,6 +36,12 @@ label{display:block;margin:8px 0 4px;color:var(--muted);font-size:13px}
 .bar i{display:block;height:100%;background:var(--ok)}
 pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);padding:10px;border-radius:8px;font-size:13px}
 .note{font-size:13px;color:var(--muted)}
+
+.toolhint{padding:10px;border-radius:8px;background:var(--chip);color:var(--muted)}
+#vresult{min-height:70px}
+.resultitem{padding:10px;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
+.resultitem a{color:var(--accent);overflow-wrap:anywhere}
+textarea{resize:vertical}
 </style>
 </head>
 <body>
@@ -51,6 +57,10 @@ pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);padding:10px
   <button data-t="teach">تعليم</button>
   <button data-t="settings">الإعدادات</button>
   <button data-t="log">السجل</button>
+  <button data-t="voice">الصوت</button>
+  <button data-t="knowledge">التعلم من المواقع</button>
+  <button data-t="phone">ملفات الهاتف</button>
+  <button data-t="media">الصور والفيديو</button>
 </nav>
 <main>
   <section id="dash" class="on">
@@ -99,6 +109,61 @@ pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);padding:10px
   <section id="log"><div class="card"><h3>سجل التغييرات (لا يقبل التعديل أو الحذف)</h3><div class="tw"><table id="clog"></table></div></div>
     <div class="card"><h3>المهام المجدولة</h3><div class="tw"><table id="jobs"></table></div></div>
     <div class="card"><h3>طابور التحقق</h3><div class="tw"><table id="vq"></table></div></div></section>
+
+  <section id="voice">
+    <div class="card">
+      <h3>المحادثة الصوتية</h3>
+      <p class="note">استخدم الإملاء الصوتي لإدخال سؤالك، ثم استمع إلى الرد. يعتمد توفر التعرف على الكلام على دعم متصفح Android واللغة المثبتة.</p>
+      <label>الفئة</label><select id="vcat"></select>
+      <label>ما تريد قوله</label><textarea id="vinput" rows="4" placeholder="اضغط زر الميكروفون وتحدث أو اكتب هنا"></textarea>
+      <div class="row"><button class="btn" id="vlisten">🎙 ابدأ الاستماع</button><button class="btn alt" id="vstop">إيقاف</button><button class="btn" id="vsend">إرسال إلى MOSAIC</button></div>
+      <div id="vresult" class="card" aria-live="polite">الرد سيظهر هنا.</div>
+      <div class="row"><label class="row"><input id="vspeak" type="checkbox" checked style="width:auto"> قراءة الرد بصوت</label></div>
+    </div>
+  </section>
+  <section id="knowledge">
+    <div class="card">
+      <h3>علّم MOSAIC من موقع تختاره</h3>
+      <p>أدخل رابط صفحة عامة. سيجمع MOSAIC النصوص المتاحة من صفحات محدودة داخل النطاق نفسه، ويحفظها محلياً مع الرابط والتاريخ وبصمة المحتوى.</p>
+      <label>رابط الموقع أو الصفحة</label><input id="siteurl" type="url" placeholder="https://example.com">
+      <label>عدد الصفحات (1 إلى 8)</label><input id="sitepages" type="number" min="1" max="8" value="8">
+      <button class="btn" id="sitelearn">ابدأ جمع المعرفة</button>
+      <div id="siteprogress" class="note" aria-live="polite"></div>
+    </div>
+    <div class="card">
+      <h3>ابحث في المعرفة التي جمعها</h3>
+      <label>سؤال أو كلمات بحث</label><input id="knowledgequery" placeholder="ما الذي تعلمه عن ...">
+      <button class="btn" id="knowsearch">بحث في الذاكرة المعرفية</button>
+      <div id="knowresults"></div>
+    </div>
+    <div class="card"><h3>مصادر محفوظة</h3><button class="btn alt" id="reloadsources">تحديث المصادر</button><div id="sourcelist"></div></div>
+    <p class="note">الحدود: لا يتجاوز MOSAIC تسجيل الدخول أو CAPTCHA أو الجدران المدفوعة، ولا يقرأ صفحات منعها robots.txt. لا يعتبر النص المستخرج حقيقة مؤكدة تلقائياً؛ احتفظ بالمصدر وراجع المعلومات المهمة.</p>
+  </section>
+  <section id="phone">
+    <div class="card">
+      <h3>استكشاف ملفات الهاتف بإذنك</h3>
+      <p class="note">اختر الملفات التي تسمح لـ MOSAIC بقراءتها. لا يوجد مسح خفي للهاتف. هذه النسخة تعرض النصوص التي تختارها؛ دعم PDF والصور والفهرسة العميقة سيضاف في مرحلة لاحقة.</p>
+      <label>اختيار ملفات نصية</label><input id="phonefiles" type="file" multiple accept=".txt,.md,.csv,.json,.log,text/plain,text/markdown,text/csv,application/json">
+      <div id="filelist" class="note"></div>
+      <label>اسأل عن محتوى الملفات المختارة</label><textarea id="filequestion" rows="3" placeholder="لخص الملفات أو ابحث عن ..."></textarea>
+      <button class="btn" id="fileask">استخراج مقتطفات للإجابة</button>
+      <div id="fileoutput"></div>
+    </div>
+  </section>
+  <section id="media">
+    <div class="card">
+      <h3>توليد الصور</h3>
+      <label>وصف الصورة</label><textarea id="imageprompt" rows="3" placeholder="صف الصورة التي تريد إنشاءها بالتفصيل"></textarea>
+      <p class="warn">محرك توليد الصور غير مربوط بعد. نحتاج ربط مزود توليد خارجي ومفتاح API قبل أن يصبح الإنشاء الفعلي متاحاً.</p>
+      <button class="btn alt" disabled>توليد صورة — بانتظار ربط المزود</button>
+    </div>
+    <div class="card">
+      <h3>توليد الفيديو</h3>
+      <label>وصف الفيديو والحركة والمشهد</label><textarea id="videoprompt" rows="3" placeholder="صف المشهد والحركة والمدة والأسلوب"></textarea>
+      <p class="warn">محرك توليد الفيديو غير مربوط بعد. لن نعرض زرّاً يوهمك بأن الفيديو يُنشأ قبل إعداد خدمة فعلية.</p>
+      <button class="btn alt" disabled>توليد فيديو — بانتظار ربط المزود</button>
+    </div>
+  </section>
 </main>
 <script src="/app.js"></script>
 </body>
