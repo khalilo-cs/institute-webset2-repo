@@ -5,6 +5,8 @@ MOSAIC web UI on a loopback-only, ephemeral localhost port.
 """
 from __future__ import annotations
 
+import os
+
 from http.server import ThreadingHTTPServer
 from pathlib import Path
 from threading import Lock, Thread
