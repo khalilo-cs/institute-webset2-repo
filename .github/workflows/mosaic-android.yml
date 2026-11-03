@@ -53,6 +53,7 @@ jobs:
         run: |
           python -m compileall -q mosaic/mosaic
           node --check mosaic/mosaic/static/app.js
+          python -m unittest discover -s mosaic/tests -t mosaic
 
       - name: Build MOSAIC APK
         run: gradle --no-daemon -p mosaic/android assembleDebug
