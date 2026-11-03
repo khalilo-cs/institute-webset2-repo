@@ -80,11 +80,22 @@ async function loadSettings() {
   const s = await api("/api/settings"); const box = $("sets"); box.replaceChildren();
   const LABELS = { online: "متصل بالإنترنت", allow_teacher: "السماح بالتعلم من نماذج أخرى", graduation_threshold: "عتبة الاستقلال عن المعلّم", graduation_margin: "هامش المقارنة مع المعلّم",
     min_heldout: "أقل عدد أمثلة للاختبار المستقل", max_regression_drop: "أقصى تراجع مسموح", max_failed_attempts: "محاولات فاشلة قبل التجميد", teacher_budget_per_cycle: "استدعاءات المعلّم لكل دورة",
-    money_budget_usd: "الميزانية المالية الكلية $", require_approval_all: "طلب موافقتي على كل تغيير", approval_cost_usd: "تكلفة تتطلب موافقتي $", episode_limit: "حد الخبرات قبل الأرشفة" };
+    money_budget_usd: "الميزانية المالية الكلية $", require_approval_all: "طلب موافقتي على كل تغيير", approval_cost_usd: "تكلفة تتطلب موافقتي $", episode_limit: "حد الخبرات قبل الأرشفة",
+    llm_backend: "النموذج اللغوي للمحادثة", llm_model: "اسم النموذج (مثل claude-sonnet-5-5 أو qwen2.5:7b)", llm_base_url: "عنوان الخادم المتوافق مع OpenAI",
+    allow_cloud_llm: "السماح للنماذج السحابية برؤية محادثاتي", memory_answer_threshold: "عتبة الإجابة من الذاكرة مباشرة (0–1)" };
   Object.entries(s).forEach(([key, v]) => {
     box.appendChild(el("label", LABELS[key] || key));
-    const i = el("input"); i.dataset.k = key;
-    if (typeof v === "boolean") { i.type = "checkbox"; i.checked = v; i.style.width = "auto"; } else { i.type = "number"; i.step = "any"; i.value = v; }
+    let i;
+    if (key === "llm_backend") {
+      i = el("select"); [["none", "بدون نموذج (ذاكرة MOSAIC فقط)"], ["anthropic", "Claude (سحابي، يحتاج ANTHROPIC_API_KEY)"], ["openai_compat", "متوافق مع OpenAI: Ollama / llama.cpp / LM Studio"]]
+        .forEach(([val, t]) => { const o = el("option", t); o.value = val; i.appendChild(o); }); i.value = v;
+    } else {
+      i = el("input");
+      if (typeof v === "boolean") { i.type = "checkbox"; i.checked = v; i.style.width = "auto"; }
+      else if (typeof v === "string") { i.type = "text"; i.value = v; i.dir = "ltr"; }
+      else { i.type = "number"; i.step = "any"; i.value = v; }
+    }
+    i.dataset.k = key; i.dataset.kind = typeof v;
     box.appendChild(i);
   });
 }
@@ -124,8 +135,101 @@ $("eadd").onclick = () => {
     .then(r => { $("emsg").textContent = `تطوير: ${r.dev} · اختبار مستقل: ${r.heldout}`; refresh(); }).catch(e => $("emsg").textContent = e.message);
 };
 $("ssave").onclick = () => {
-  const body = {}; document.querySelectorAll("#sets input").forEach(i => body[i.dataset.k] = i.type === "checkbox" ? i.checked : Number(i.value));
+  const body = {}; document.querySelectorAll("#sets input, #sets select").forEach(i => body[i.dataset.k] = i.type === "checkbox" ? i.checked : i.dataset.kind === "string" ? i.value : Number(i.value));
   api("/api/settings", body).then(() => { $("smsg").textContent = "حُفظت"; refresh(); }).catch(e => $("smsg").textContent = e.message);
 };
 
 refresh();
+
+// ======================= chat =======================
+// Minimal, safe Markdown → DOM (no innerHTML anywhere).
+function inline(parent, text) {
+  const re = /(`[^`]+`|\*\*[^*]+\*\*)/g; let last = 0, m;
+  while ((m = re.exec(text))) {
+    if (m.index > last) parent.appendChild(document.createTextNode(text.slice(last, m.index)));
+    const t = m[0];
+    parent.appendChild(t.startsWith("`") ? el("code", t.slice(1, -1)) : el("strong", t.slice(2, -2)));
+    last = m.index + t.length;
+  }
+  if (last < text.length) parent.appendChild(document.createTextNode(text.slice(last)));
+}
+function renderMd(text) {
+  const root = el("div"); const lines = String(text).split("\n"); let list = null, i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    if (line.startsWith("```")) {
+      const code = []; i++;
+      while (i < lines.length && !lines[i].startsWith("```")) code.push(lines[i++]);
+      i++; list = null; const pre = el("pre"); pre.appendChild(el("code", code.join("\n"))); root.appendChild(pre); continue;
+    }
+    const h = line.match(/^(#{1,3})\s+(.*)/);
+    const li = line.match(/^\s*(?:[-*•]|\d+[.)])\s+(.*)/);
+    if (h) { list = null; const e = el("h" + h[1].length); inline(e, h[2]); root.appendChild(e); }
+    else if (li) { if (!list) { list = el(/^\s*\d/.test(line) ? "ol" : "ul"); root.appendChild(list); } const e = el("li"); inline(e, li[1]); list.appendChild(e); }
+    else if (line.trim() === "") { list = null; }
+    else { list = null; const p = el("p"); inline(p, line); root.appendChild(p); }
+    i++;
+  }
+  return root;
+}
+
+let CONV = null;
+const SRC = (s) => !s ? "" : s.startsWith("mosaic") ? "من ذاكرة MOSAIC (يعمل بدون إنترنت)" : s.startsWith("llm:") ? "النموذج: " + s.slice(4) : s === "none" ? "لا يوجد نموذج متاح" : s;
+
+function msgNode(m) {
+  const d = el("div", null, "msg " + m.role);
+  if (m.role === "assistant") {
+    d.appendChild(renderMd(m.content));
+    const src = el("div", null, "src"); src.appendChild(el("span", SRC(m.source)));
+    if (m.id && m.source !== "error") {
+      const up = el("button", m.rating === 1 ? "👍 ✓" : "👍"); up.title = "إجابة صحيحة";
+      up.onclick = () => api("/api/chat/rate", { message_id: m.id, good: true }).then(() => { up.textContent = "👍 ✓"; loadMemory(); });
+      const fix = el("button", "✏️ صحّح"); fix.title = "علّمني الإجابة الصحيحة";
+      fix.onclick = () => {
+        const c = prompt("اكتب الإجابة الصحيحة. سأحفظها وأستخدمها لاحقًا حتى بدون إنترنت:");
+        if (c && c.trim()) api("/api/chat/rate", { message_id: m.id, good: false, correction: c }).then(() => { fix.textContent = "✏️ ✓ تعلّمت"; });
+      };
+      src.append(up, fix);
+    }
+    d.appendChild(src);
+  } else d.textContent = m.content;
+  return d;
+}
+
+async function loadConvs() {
+  const list = await api("/api/chat/conversations"); const box = $("convlist"); box.replaceChildren();
+  list.forEach(c => {
+    const it = el("div", null, "item" + (c.id === CONV ? " on" : "")); it.appendChild(el("span", c.title));
+    const x = el("button", "✕", "x"); x.title = "حذف";
+    x.onclick = (e) => { e.stopPropagation(); if (confirm("حذف المحادثة؟")) api("/api/chat/delete", { conversation_id: c.id }).then(() => { if (CONV === c.id) { CONV = null; $("msgs").replaceChildren(); } loadConvs(); }); };
+    it.appendChild(x); it.onclick = () => openConv(c.id); box.appendChild(it);
+  });
+}
+async function openConv(id) {
+  CONV = id; const msgs = await api("/api/chat/messages?id=" + encodeURIComponent(id));
+  const box = $("msgs"); box.replaceChildren(); msgs.forEach(m => box.appendChild(msgNode(m))); loadConvs(); window.scrollTo(0, document.body.scrollHeight);
+}
+async function loadMemory() {
+  const prefs = await api("/api/memory"); const box = $("memlist"); box.replaceChildren();
+  if (!prefs.length) box.appendChild(el("p", "لا شيء محفوظ بعد.", "muted"));
+  prefs.forEach(p => { const r = el("div", null, "row"); r.appendChild(el("span", p.value)); const x = el("button", "✕", "x"); x.onclick = () => api("/api/memory/delete", { id: p.id }).then(loadMemory); r.appendChild(x); box.appendChild(r); });
+  const st = await api("/api/chat/status");
+  $("llmstatus").textContent = st.backend ? `متصل بـ ${st.backend}${st.local ? " (محلي على جهازك)" : " (سحابي)"}` :
+    (st.configured ? `النموذج ${st.configured} غير متاح الآن (غير متصل أو ممنوع في الإعدادات). أجيب من ذاكرتي فقط.` : "لم يُضبط نموذج لغوي. اذهب إلى الإعدادات واختر llm_backend. حتى ذلك الحين أجيب من ذاكرتي فقط.");
+}
+
+$("newconv").onclick = () => { CONV = null; $("msgs").replaceChildren(); loadConvs(); $("msgin").focus(); };
+$("msgin").addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("composer").requestSubmit(); } });
+$("composer").onsubmit = async (e) => {
+  e.preventDefault(); const text = $("msgin").value.trim(); if (!text) return;
+  $("msgin").value = ""; $("send").disabled = true;
+  const box = $("msgs"); box.appendChild(msgNode({ role: "user", content: text }));
+  const wait = el("div", "يفكر…", "msg assistant typing"); box.appendChild(wait); window.scrollTo(0, document.body.scrollHeight);
+  try {
+    const r = await api("/api/chat/send", { conversation_id: CONV, text });
+    CONV = r.conversation_id; wait.replaceWith(msgNode({ role: "assistant", content: r.content, source: r.source, id: r.message_id }));
+    loadConvs(); if (r.source === "mosaic:memory") loadMemory();
+  } catch (err) { wait.replaceWith(el("div", err.message, "msg assistant bad")); }
+  $("send").disabled = false; window.scrollTo(0, document.body.scrollHeight);
+};
+loadConvs(); loadMemory();

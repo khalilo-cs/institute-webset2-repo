@@ -21,6 +21,10 @@ def main() -> None:
     s.add_argument("--port", type=int, default=8765)
     s.add_argument("--demo", action="store_true", help="preload the demo categories and simulated teacher")
     s.add_argument("--anthropic", action="store_true", help="use a real Claude model as teacher (ANTHROPIC_API_KEY)")
+    s.add_argument("--llm", choices=["none", "anthropic", "openai_compat"],
+                   help="chat backend: anthropic (Claude API) or openai_compat (Ollama, llama.cpp, LM Studio...)")
+    s.add_argument("--model", help="model name for the chat backend")
+    s.add_argument("--llm-url", help="base URL for openai_compat, e.g. http://127.0.0.1:11434/v1")
     a = p.parse_args()
     if a.cmd == "demo":
         demo.run()
@@ -32,6 +36,12 @@ def main() -> None:
         mo = Mosaic(a.db)
     if a.anthropic:
         mo.hub.register(AnthropicTeacher())
+    if a.llm:
+        mo.m.set_setting("llm_backend", a.llm)
+    if a.model:
+        mo.m.set_setting("llm_model", a.model)
+    if a.llm_url:
+        mo.m.set_setting("llm_base_url", a.llm_url)
     serve(mo, a.host, a.port)
 
 

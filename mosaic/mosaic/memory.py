@@ -95,6 +95,15 @@ CREATE TABLE IF NOT EXISTS models (
   checked INTEGER NOT NULL DEFAULT 0, correct INTEGER NOT NULL DEFAULT 0,
   enabled INTEGER NOT NULL DEFAULT 1
 );
+CREATE TABLE IF NOT EXISTS conversations (
+  id TEXT PRIMARY KEY, user_id TEXT NOT NULL, title TEXT NOT NULL,
+  created_at REAL NOT NULL, updated_at REAL NOT NULL
+);
+CREATE TABLE IF NOT EXISTS messages (
+  id TEXT PRIMARY KEY, conv_id TEXT NOT NULL, role TEXT NOT NULL, content TEXT NOT NULL,
+  source TEXT, rating INTEGER, created_at REAL NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_msg_conv ON messages(conv_id, created_at);
 CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS verify_queue (
   id TEXT PRIMARY KEY, category TEXT, input TEXT, claim TEXT, reason TEXT, created_at REAL
@@ -114,6 +123,11 @@ DEFAULT_SETTINGS = {
     "require_approval_all": False,
     "approval_cost_usd": 1.0,
     "episode_limit": 5000,
+    "llm_backend": "none",          # none | anthropic | openai_compat
+    "llm_model": "",
+    "llm_base_url": "http://127.0.0.1:11434/v1",
+    "allow_cloud_llm": True,        # False = only local models may see conversations
+    "memory_answer_threshold": 0.9,
 }
 
 
@@ -146,6 +160,17 @@ class Memory:
     def set_setting(self, key: str, value: Any, actor: str = "user") -> None:
         if key not in DEFAULT_SETTINGS:
             raise KeyError(f"unknown setting {key}")
+        default = DEFAULT_SETTINGS[key]
+        if isinstance(default, bool):
+            if not isinstance(value, bool):
+                raise ValueError(f"{key} must be true/false")
+        elif isinstance(default, (int, float)):
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                raise ValueError(f"{key} must be a number")
+        elif not isinstance(value, str):
+            raise ValueError(f"{key} must be text")
+        if key == "llm_backend" and value not in ("none", "anthropic", "openai_compat"):
+            raise ValueError("llm_backend must be none, anthropic or openai_compat")
         self.x("INSERT OR REPLACE INTO settings VALUES (?, ?)", (key, json.dumps(value)))
         self.log(actor, "setting", key, {"value": value})
 
@@ -224,8 +249,8 @@ class Memory:
             self.log("system", "conflict_detected", fid, {"question": question})
         return fid
 
-    def recall(self, question: str, user_id: str = "default", min_sim: float = 0.55,
-               min_conf: float = 0.5, category: str | None = None) -> sqlite3.Row | None:
+    def search(self, question: str, user_id: str = "default", k: int = 5, min_sim: float = 0.0,
+               min_conf: float = 0.5, category: str | None = None) -> list[tuple[float, sqlite3.Row]]:
         """Hybrid retrieval: IDF-weighted token overlap (entities matter more
         than frequent words like "capital") + embedding cosine."""
         sql = "SELECT * FROM semantic WHERE user_id=? AND archived=0"
@@ -235,7 +260,7 @@ class Memory:
             params.append(category)
         rows = self.q(sql, params)
         if not rows:
-            return None
+            return []
         docs = [set(tokens(r["question"], True)) for r in rows]
         df: dict[str, int] = {}
         for d in docs:
@@ -246,15 +271,21 @@ class Memory:
         q_toks = set(tokens(question, True))
         q_weight = sum(idf(t) for t in q_toks) or 1.0
         qv = embed(question)
-        best, best_s = None, min_sim
+        scored = []
         for row, d in zip(rows, docs):
             if row["confidence"] < min_conf or (row["conflict"] and not row["verified"]):
                 continue  # never answer from low confidence or an unresolved conflict
             overlap = sum(idf(t) for t in q_toks & d) / q_weight
             s = 0.7 * overlap + 0.3 * max(0.0, cosine(qv, json.loads(row["embedding"])))
-            if s > best_s:
-                best, best_s = row, s
-        return best
+            if s > min_sim:
+                scored.append((s, row))
+        scored.sort(key=lambda x: -x[0])
+        return scored[:k]
+
+    def recall(self, question: str, user_id: str = "default", min_sim: float = 0.55,
+               min_conf: float = 0.5, category: str | None = None) -> sqlite3.Row | None:
+        hits = self.search(question, user_id, 1, min_sim, min_conf, category)
+        return hits[0][1] if hits else None
 
     # ---------- episodes ----------
     def add_episode(self, category: str, inp: str, answer: str | None, solver: str,

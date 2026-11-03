@@ -8,13 +8,16 @@ import os
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+from .chat import ChatEngine
 from .core import Mosaic
 
 STATIC = Path(__file__).parent / "static"
 MAX_BODY = 256 * 1024
 
 
-def make_handler(mo: Mosaic):
+def make_handler(mo: Mosaic, chat: ChatEngine | None = None):
+    chat = chat or ChatEngine(mo)
+
     class Handler(BaseHTTPRequestHandler):
         server_version = "MOSAIC/0.1"
 
@@ -52,7 +55,22 @@ def make_handler(mo: Mosaic):
             if path == "/app.js":
                 return self._send(200, (STATIC / "app.js").read_bytes(), "text/javascript; charset=utf-8")
             if path == "/api/dashboard":
-                return self._send(200, mo.dashboard())
+                d = mo.dashboard()
+                d["chat"] = {**chat.stats(), **chat.status()}
+                return self._send(200, d)
+            if path == "/api/chat/conversations":
+                return self._send(200, chat.conversations())
+            if path == "/api/chat/messages":
+                from urllib.parse import parse_qs, urlparse
+                cid = (parse_qs(urlparse(self.path).query).get("id") or [""])[0]
+                try:
+                    return self._send(200, chat.messages(cid))
+                except KeyError as e:
+                    return self._send(404, {"error": str(e)})
+            if path == "/api/chat/status":
+                return self._send(200, chat.status())
+            if path == "/api/memory":
+                return self._send(200, chat.preferences())
             if path == "/api/settings":
                 from .memory import DEFAULT_SETTINGS
                 return self._send(200, {k: mo.m.setting(k) for k in DEFAULT_SETTINGS})
@@ -62,6 +80,17 @@ def make_handler(mo: Mosaic):
             path = self.path.split("?", 1)[0]
             try:
                 b = self._body()
+                if path == "/api/chat/send":
+                    return self._send(200, chat.send(b.get("conversation_id") or None, str(b.get("text", ""))))
+                if path == "/api/chat/rate":
+                    return self._send(200, chat.rate(str(b["message_id"]), bool(b.get("good", False)),
+                                                     b.get("correction") or None))
+                if path == "/api/chat/delete":
+                    chat.delete_conversation(str(b["conversation_id"]))
+                    return self._send(200, {"ok": True})
+                if path == "/api/memory/delete":
+                    chat.delete_preference(str(b["id"]))
+                    return self._send(200, {"ok": True})
                 if path == "/api/task":
                     return self._send(200, mo.solve(str(b["category"]), str(b["input"]),
                                                     private=bool(b.get("private", False))))
@@ -105,8 +134,8 @@ def make_handler(mo: Mosaic):
     return Handler
 
 
-def serve(mo: Mosaic, host: str = "127.0.0.1", port: int = 8765) -> None:
-    httpd = ThreadingHTTPServer((host, port), make_handler(mo))
+def serve(mo: Mosaic, host: str = "127.0.0.1", port: int = 8765, chat: ChatEngine | None = None) -> None:
+    httpd = ThreadingHTTPServer((host, port), make_handler(mo, chat))
     print(f"MOSAIC يعمل على http://{host}:{port}")
     try:
         httpd.serve_forever()

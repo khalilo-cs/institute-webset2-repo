@@ -36,6 +36,29 @@ label{display:block;margin:8px 0 4px;color:var(--muted);font-size:13px}
 .bar i{display:block;height:100%;background:var(--ok)}
 pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);padding:10px;border-radius:8px;font-size:13px}
 .note{font-size:13px;color:var(--muted)}
+.chatwrap{display:grid;grid-template-columns:260px 1fr;gap:12px;margin-top:4px}
+@media (max-width:760px){.chatwrap{grid-template-columns:1fr}.convs{order:2}}
+.convs .item{padding:8px;border-radius:8px;cursor:pointer;display:flex;justify-content:space-between;gap:6px;border:1px solid transparent}
+.convs .item:hover,.convs .item.on{background:var(--card);border-color:var(--line)}
+.convs .item span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.convs .x{background:none;border:0;color:var(--muted);cursor:pointer}
+.chatmain{display:flex;flex-direction:column;min-height:70vh}
+#msgs{flex:1;display:flex;flex-direction:column;gap:10px;padding:8px 0}
+.msg{max-width:92%;padding:10px 14px;border-radius:14px;border:1px solid var(--line);background:var(--card);overflow-wrap:anywhere}
+.msg.user{align-self:flex-start;background:var(--accent);color:#fff;border-color:var(--accent)}
+.msg.assistant{align-self:flex-end}
+.msg .src{font-size:12px;color:var(--muted);margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.msg .src button{background:none;border:1px solid var(--line);border-radius:6px;color:var(--text);cursor:pointer;padding:0 6px}
+.msg pre{direction:ltr;text-align:left;overflow-x:auto}
+.msg code{font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--bg);padding:0 4px;border-radius:4px}
+.msg h1,.msg h2,.msg h3{font-size:16px;margin:8px 0 4px}
+.msg ul,.msg ol{margin:4px 0;padding-inline-start:20px}
+.msg p{margin:4px 0}
+#composer{display:flex;gap:8px;align-items:flex-end;position:sticky;bottom:0;background:var(--bg);padding:8px 0}
+#composer textarea{resize:vertical;min-height:44px}
+#composer .btn{margin:0}
+.typing{opacity:.6}
+.mem{font-size:13px}.mem .row{justify-content:space-between}
 </style>
 </head>
 <body>
@@ -45,7 +68,8 @@ pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);padding:10px
   <span id="net" class="chip"></span>
 </header>
 <nav id="tabs">
-  <button data-t="dash" class="on">لوحة إثبات التطور</button>
+  <button data-t="chat" class="on">المحادثة</button>
+  <button data-t="dash">لوحة إثبات التطور</button>
   <button data-t="task">المهام</button>
   <button data-t="approve">الموافقات</button>
   <button data-t="teach">تعليم</button>
@@ -53,7 +77,25 @@ pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);padding:10px
   <button data-t="log">السجل</button>
 </nav>
 <main>
-  <section id="dash" class="on">
+  <section id="chat" class="on">
+    <div class="chatwrap">
+      <aside class="convs">
+        <button class="btn" id="newconv">+ محادثة جديدة</button>
+        <div id="convlist"></div>
+        <div class="card mem"><b>ذاكرتي</b><p class="note">اكتب «تذكر أن …» لأحفظ شيئًا، و«انس كل شيء» لمسح الملاحظات.</p><div id="memlist"></div></div>
+      </aside>
+      <div class="chatmain">
+        <div id="llmstatus" class="note"></div>
+        <div id="msgs"></div>
+        <form id="composer">
+          <textarea id="msgin" rows="2" placeholder="اكتب رسالتك… (Enter للإرسال، Shift+Enter لسطر جديد)"></textarea>
+          <button class="btn" id="send" type="submit">إرسال</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section id="dash">
     <div class="row"><button class="btn" id="learn">تشغيل دورة تعلم</button><span id="learnmsg" class="note"></span></div>
     <div class="grid" id="kpis" style="margin-top:12px"></div>
     <div class="card"><h3>الفئات: الأداء على مهام مستقلة والاستقلال عن المعلّم</h3><div class="tw"><table id="cats"></table></div>
