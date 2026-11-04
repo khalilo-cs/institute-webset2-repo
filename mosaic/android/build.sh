@@ -4,14 +4,18 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 SDK_JAR=${SDK_JAR:-/usr/lib/android-sdk/platforms/android-23/android.jar}
-VERSION_NAME=${VERSION_NAME:-0.3.0}
-VERSION_CODE=${VERSION_CODE:-3}
+VERSION_NAME=${VERSION_NAME:-0.4.0}
+VERSION_CODE=${VERSION_CODE:-4}
 KEYSTORE=${KEYSTORE:-$HOME/.mosaic-android/release.keystore}
 KS_PASS=${KS_PASS:-mosaic-local}
 
-rm -rf build && mkdir -p build/gen build/obj build/apk
+rm -rf build && mkdir -p build/gen build/obj build/apk build/assets
+echo "▸ embedded Python core"
+python3 core/prepare_core.py
+cp -r assets/. build/assets/
+cp -r build/core/assets/. build/assets/
 echo "▸ resources"
-aapt package -f -m -J build/gen -M AndroidManifest.xml -S res -A assets -I "$SDK_JAR" \
+aapt package -f -m -J build/gen -M AndroidManifest.xml -S res -A build/assets -I "$SDK_JAR" \
   --min-sdk-version 23 --target-sdk-version 34 --version-code "$VERSION_CODE" --version-name "$VERSION_NAME" \
   -F build/apk/unsigned.apk
 echo "▸ java"
@@ -20,6 +24,8 @@ javac --release 8 -nowarn -Xlint:-options -classpath "$SDK_JAR" -d build/obj \
 echo "▸ dex"
 dalvik-exchange --dex --min-sdk-version=23 --output=build/apk/classes.dex build/obj
 (cd build/apk && aapt add -f unsigned.apk classes.dex >/dev/null)
+echo "▸ native libraries (CPython, extensions, launcher)"
+(cd build/core && aapt add -f ../apk/unsigned.apk lib/arm64-v8a/*.so >/dev/null)
 echo "▸ align + sign"
 zipalign -f -p 4 build/apk/unsigned.apk build/apk/aligned.apk
 if [ ! -f "$KEYSTORE" ]; then

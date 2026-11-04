@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>MOSAIC</title>
+<style>
+body{margin:0;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(900px 500px at 50% 0,#1d2b4f,#0e1526);color:#eef2fa;font:16px/1.7 system-ui,"Noto Sans Arabic",sans-serif}
+img{width:96px;height:96px;animation:breathe 1.6s ease-in-out infinite}
+@keyframes breathe{50%{transform:scale(.92);opacity:.8}}
+h1{margin:14px 0 2px;font-size:26px;letter-spacing:1px}
+p{color:#9fb0cf;margin:0}
+.bar{width:180px;height:4px;border-radius:2px;background:#26355a;overflow:hidden;margin-top:18px}
+.bar i{display:block;width:40%;height:100%;background:#4f8ff0;border-radius:2px;animation:slide 1.2s ease-in-out infinite}
+@keyframes slide{0%{transform:translateX(150%)}100%{transform:translateX(-250%)}}
+</style></head>
+<body><img src="icon.svg" alt=""><h1>MOSAIC</h1><p id="msg">جارٍ تشغيل النواة على جهازك…</p><div class="bar"><i></i></div>
+<script>setTimeout(function(){document.getElementById("msg").textContent="التشغيل الأول يستغرق وقتًا أطول قليلًا…";},5000);</script>
+</body></html>

@@ -31,52 +31,38 @@ a{color:var(--accent)}
   <h1>MOSAIC</h1>
   <p class="sub">مساعد ذكي يتعلم باستمرار من تصحيحاتك</p>
 
-  <div class="err" id="err" hidden>لم أستطع الوصول إلى نواة MOSAIC على العنوان المحفوظ. تأكد أنها تعمل، ثم اضغط «اتصال».</div>
+  <div class="err" id="err" hidden></div>
+  <pre id="log" hidden></pre>
 
   <div class="card">
-    <h2>اتصل بنواة MOSAIC</h2>
+    <h2>النواة المدمجة (موصى به)</h2>
+    <p class="note">MOSAIC يعمل بالكامل داخل هذا التطبيق، بدون إنترنت وبدون أي تطبيق آخر.</p>
+    <button class="main" id="embedded">تشغيل النواة المدمجة</button>
+  </div>
+
+  <div class="card">
+    <h2>أو اتصل بنواة على حاسوبك</h2>
+    <p class="note">شغّل على الحاسوب <b dir="ltr">python -m mosaic serve --host 0.0.0.0</b> واكتب عنوانه هنا. استخدم ذلك على شبكة بيتك الموثوقة فقط.</p>
     <input id="url" inputmode="url" autocomplete="off" spellcheck="false">
-    <button class="main" id="go">اتصال</button>
-    <p class="note">على نفس الجوال استخدم <b dir="ltr">http://127.0.0.1:8765</b>. على حاسوب في شبكة بيتك استخدم عنوانه، مثل <b dir="ltr">http://192.168.1.20:8765</b>.</p>
-  </div>
-
-  <div class="card">
-    <h2>تشغيل النواة على هذا الجوال (مرة واحدة)</h2>
-    <div class="step"><span class="num">1</span><div>ثبّت تطبيق <b>Termux</b> من F-Droid.</div></div>
-    <div class="step"><span class="num">2</span><div>افتح Termux والصق:
-      <pre id="c1">pkg update -y && pkg install -y python git
-git clone -b ccr-253e89f3-o4rrym https://github.com/khalilo-cs/institute-webset2-repo
-cd institute-webset2-repo/mosaic
-python -m mosaic serve</pre><button class="copy" data-c="c1">نسخ</button></div></div>
-    <div class="step"><span class="num">3</span><div>ارجع هنا واضغط «اتصال». في المرات القادمة يكفي في Termux:
-      <pre id="c2">cd institute-webset2-repo/mosaic && python -m mosaic serve</pre><button class="copy" data-c="c2">نسخ</button></div></div>
-  </div>
-
-  <div class="card">
-    <h2>للحصول على ذكاء Claude في المحادثة</h2>
-    <p class="note">أنشئ مفتاحًا من console.anthropic.com ثم شغّل النواة هكذا بدل الأمر السابق:</p>
-    <pre id="c3">ANTHROPIC_API_KEY=ضع_مفتاحك_هنا python -m mosaic serve --llm anthropic</pre><button class="copy" data-c="c3">نسخ</button>
-    <p class="note" style="clear:both">بدون مفتاح يعمل MOSAIC من ذاكرته فقط، أو مع نموذج محلي عبر Ollama.</p>
+    <button class="main" id="go" style="background:#26355a;color:#eef2fa">اتصال</button>
   </div>
 </main>
 <script>
 var bridge = window.MosaicApp;
 var url = document.getElementById("url");
-url.value = bridge ? bridge.getServerUrl() : "http://127.0.0.1:8765";
-if (location.search.indexOf("error=1") >= 0) document.getElementById("err").hidden = false;
+url.value = bridge ? bridge.getServerUrl() : "http://192.168.1.20:8765";
+var m = location.search.match(/error=(\w+)/);
+if (m) {
+  var err = document.getElementById("err"); err.hidden = false;
+  err.textContent = m[1] === "core" ? "لم تبدأ النواة المدمجة. هذا سجلها (أرسله للمطوّر إن تكرر):" : "لم أستطع الوصول إلى النواة على العنوان المحفوظ. تأكد أنها تعمل وأن الجوال على نفس الشبكة.";
+  if (m[1] === "core" && bridge) { var log = document.getElementById("log"); log.textContent = bridge.getLog() || "(السجل فارغ)"; log.hidden = false; }
+}
+document.getElementById("embedded").onclick = function () { if (bridge) bridge.useEmbedded(); };
 document.getElementById("go").onclick = function () {
   var v = url.value.trim();
   if (!/^https?:\/\//.test(v)) { url.focus(); return; }
   if (bridge) bridge.connect(v); else location.href = v;
 };
-Array.prototype.forEach.call(document.querySelectorAll(".copy"), function (b) {
-  b.onclick = function () {
-    var t = document.getElementById(b.getAttribute("data-c")).textContent;
-    var ta = document.createElement("textarea"); ta.value = t; document.body.appendChild(ta); ta.select();
-    try { document.execCommand("copy"); b.textContent = "تم النسخ"; } catch (e) {} ta.remove();
-    setTimeout(function () { b.textContent = "نسخ"; }, 1500);
-  };
-});
 </script>
 </body>
 </html>

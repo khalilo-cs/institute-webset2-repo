@@ -6,6 +6,7 @@
         android:label="MOSAIC"
         android:icon="@mipmap/ic_launcher"
         android:allowBackup="false"
+        android:extractNativeLibs="true"
         android:usesCleartextTraffic="true"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Material.NoActionBar">
