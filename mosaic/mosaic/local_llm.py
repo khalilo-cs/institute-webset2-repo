@@ -218,7 +218,9 @@ class LocalModels:
         self.stop()
         threads = max(1, min(os.cpu_count() or 4, 6) - 1)
         cmd = [binary, "-m", str(self.path(mid)), "--host", "127.0.0.1", "--port", str(PORT),
-               "-c", "4096", "-t", str(threads), "--jinja", "--reasoning-budget", "0", "--no-webui"]
+               "-c", "4096", "-t", str(threads), "--jinja", "--no-webui",
+               # Qwen3's official non-thinking mode: answers directly instead of a long hidden reasoning pass
+               "--chat-template-kwargs", '{"enable_thinking":false}']
         log = open(self.dir / "llama-server.log", "w")
         self.proc = subprocess.Popen(cmd, stdout=log, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL)
         self.active, self.state, self.error = mid, "starting", ""

@@ -23,7 +23,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 args = sys.argv[1:]
 port = int(args[args.index("--port") + 1])
 model = args[args.index("-m") + 1]
-assert "--jinja" in args and "--reasoning-budget" in args
+assert "--jinja" in args and json.loads(args[args.index("--chat-template-kwargs") + 1]) == {"enable_thinking": False}
 class H(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.0"
     def log_message(self, *a): pass
