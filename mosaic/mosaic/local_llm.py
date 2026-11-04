@@ -39,7 +39,10 @@ CATALOG = [
      "note": "أذكى بوضوح. يحتاج جوالًا حديثًا."},
     {"id": "qwen3-8b", "name": "Qwen3 8B", "params": "8 مليارات", "repo": "Qwen/Qwen3-8B-GGUF",
      "file": "Qwen3-8B-Q4_K_M.gguf", "size": 5027783488, "min_ram_gb": 10,
-     "note": "الأقوى هنا. بطيء على الجوال ويحتاج ذاكرة كبيرة."},
+     "note": "قوي ومناسب لجوال بذاكرة 12 إلى 16 جيجابايت. أبطأ من الأصغر."},
+    {"id": "qwen3-14b", "name": "Qwen3 14B", "params": "14 مليارًا", "repo": "Qwen/Qwen3-14B-GGUF",
+     "file": "Qwen3-14B-Q4_K_M.gguf", "size": 9001752960, "min_ram_gb": 16,
+     "note": "الأذكى هنا، وتجريبي على الجوال: بطيء جدًا وقد يغلقه النظام إذا امتلأت الذاكرة."},
 ]
 BY_ID = {m["id"]: m for m in CATALOG}
 
