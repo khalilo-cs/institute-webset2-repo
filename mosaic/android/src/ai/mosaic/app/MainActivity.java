@@ -150,6 +150,8 @@ public class MainActivity extends Activity {
             env.put("TMPDIR", getCacheDir().getAbsolutePath());
             env.put("SSL_CERT_DIR", "/system/etc/security/cacerts");
             env.put("PYTHONDONTWRITEBYTECODE", "1");
+            File ext = getExternalFilesDir(null);   // app-private, no permission needed, room for multi-GB models
+            env.put("MOSAIC_MODELS_DIR", new File(ext != null ? ext : files, "models").getAbsolutePath());
             pb.directory(files);
             pb.redirectErrorStream(true);
             core = pb.start();

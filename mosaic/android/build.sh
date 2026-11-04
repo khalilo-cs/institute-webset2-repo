@@ -4,14 +4,18 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 SDK_JAR=${SDK_JAR:-/usr/lib/android-sdk/platforms/android-23/android.jar}
-VERSION_NAME=${VERSION_NAME:-0.4.0}
-VERSION_CODE=${VERSION_CODE:-4}
+VERSION_NAME=${VERSION_NAME:-0.5.0}
+VERSION_CODE=${VERSION_CODE:-5}
 KEYSTORE=${KEYSTORE:-$HOME/.mosaic-android/release.keystore}
 KS_PASS=${KS_PASS:-mosaic-local}
 
 rm -rf build && mkdir -p build/gen build/obj build/apk build/assets
 echo "▸ embedded Python core"
 python3 core/prepare_core.py
+# optional on-device LLM engine (built by core/build_llama.sh)
+for f in core/bin/libllamaserver.so core/bin/libllamaserver_dotprod.so; do
+  [ -f "$f" ] && cp "$f" build/core/lib/arm64-v8a/ && echo "  + $(basename "$f")"
+done
 cp -r assets/. build/assets/
 cp -r build/core/assets/. build/assets/
 echo "▸ resources"

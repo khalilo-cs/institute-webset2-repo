@@ -11,6 +11,8 @@ import hashlib
 import shutil
 import subprocess
 import sys
+import time
+import urllib.error
 import urllib.request
 import zipfile
 from pathlib import Path
@@ -37,16 +39,28 @@ def fetch(name: str) -> Path:
         with urllib.request.urlopen(req, timeout=300) as r, open(dest, "wb") as f:
             shutil.copyfileobj(r, f)
     for algo in ("sha256", "sha1"):
-        try:
-            req = urllib.request.Request(f"{BASE}/{name}.{algo}", headers={"User-Agent": "mosaic-build/1.0"})
-            with urllib.request.urlopen(req, timeout=60) as r:
-                expected = r.read().decode().split()[0].strip()
-        except Exception:
+        cached = CACHE / f"{name}.{algo}"
+        expected = cached.read_text().strip() if cached.exists() else None
+        if expected is None:
+            for attempt in range(4):  # Maven Central rate-limits bursts (HTTP 429)
+                try:
+                    req = urllib.request.Request(f"{BASE}/{name}.{algo}", headers={"User-Agent": "mosaic-build/1.0"})
+                    with urllib.request.urlopen(req, timeout=60) as r:
+                        expected = r.read().decode().split()[0].strip()
+                    break
+                except urllib.error.HTTPError as e:
+                    if e.code == 404:
+                        break
+                    time.sleep(2 ** attempt * 3)
+                except Exception:
+                    time.sleep(2 ** attempt * 3)
+        if not expected:
             continue
         actual = hashlib.new(algo, dest.read_bytes()).hexdigest()
         if actual != expected:
             dest.unlink()
             sys.exit(f"checksum mismatch for {name}")
+        cached.write_text(expected)
         print(f"  verified {name} ({algo})")
         return dest
     sys.exit(f"no checksum available for {name}")

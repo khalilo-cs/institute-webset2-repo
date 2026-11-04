@@ -44,6 +44,15 @@ python -m mosaic serve --llm openai_compat --model qwen2.5:3b
 
 إعادة البناء: `android/build.sh` (يحتاج حزم Ubuntu: `aapt apksigner zipalign dalvik-exchange android-sdk-platform-23 clang lld`).
 
+### نموذج لغوي على الجهاز (بدون إنترنت وبدون Claude)
+
+`mosaic/local_llm.py` يدير نماذج Qwen3 المفتوحة (0.6B و1.7B و4B و8B، رخصة Apache 2.0). ينزّلها من Hugging Face مع إمكانية استكمال التنزيل، ويتحقق من بصمة SHA-256، ويشغّلها بمحرك llama.cpp (`llama-server`)، ثم يربطها بالمحادثة. بعد التنزيل تعمل بالكامل بدون إنترنت.
+
+- على الحاسوب: ثبّت llama.cpp حتى يكون `llama-server` متاحًا، ثم اختر النموذج من شاشة «النماذج على جهازك».
+- في التطبيق: شغّل `android/core/build_llama.sh` لبناء المحرك لمعالجات ARM64، ثم `android/build.sh`. ستُضمَّن نسختان من المحرك: نسخة عامة ونسخة أسرع للمعالجات الحديثة، ويختار التطبيق المناسبة تلقائيًا.
+
+**تنبيه:** هذه نماذج صغيرة. حتى نموذج 8B أضعف بكثير من Claude أو ChatGPT، ويحتاج جوالًا بذاكرة 10 جيجابايت أو أكثر.
+
 ## التشغيل
 
 لا يحتاج إلى أي مكتبات خارجية. يكفي Python 3.10 أو أحدث.
