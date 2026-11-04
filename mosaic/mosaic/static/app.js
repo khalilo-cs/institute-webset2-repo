@@ -48,6 +48,7 @@ function showView(v) {
   $("app").classList.remove("open");
   if (v === "dash" || v === "memory" || v === "teach") refreshDash();
   if (v === "settings") loadSettings();
+  if (v === "models") loadModels();
 }
 document.querySelectorAll("#sidenav button[data-v]").forEach((b) => b.onclick = () => showView(b.dataset.v));
 $("menubtn").onclick = () => $("app").classList.toggle("open");
@@ -114,7 +115,9 @@ async function loadStatus() {
   const model = sets.llm_backend === "none" ? "" : sets.llm_model || (sets.llm_backend === "anthropic" ? "claude-sonnet-5-5" : "qwen2.5:3b");
   const cur = `${sets.llm_backend}|${model}`;
   const local = sets.llm_backend === "openai_compat" ? model : "qwen2.5:3b";
-  const opts = [...MODELS, [`openai_compat|${local}`, `نموذج محلي: ${local}`]];
+  const lm = await api("/api/local/models").catch(() => ({ models: [] }));
+  const opts = [...MODELS, ...lm.models.filter((m) => m.installed).map((m) => [`openai_compat|${m.id}`, `على جهازك: ${m.name}`])];
+  if (!lm.models.some((m) => m.id === local)) opts.push([`openai_compat|${local}`, `خادم محلي: ${local}`]);
   if (!opts.some(([v]) => v === cur)) opts.push([cur, cur.replace("|", ": ")]);
   opts.forEach(([v, t]) => { const o = el("option", t); o.value = v; sel.appendChild(o); });
   sel.value = cur;
@@ -124,9 +127,44 @@ async function loadStatus() {
 }
 $("modelpick").onchange = async (e) => {
   const [backend, model] = e.target.value.split("|");
-  try { await api("/api/chat/model", { llm_backend: backend, llm_model: model }); } catch (err) { alert(err.message); }
+  try {
+    if (backend === "openai_compat" && /^qwen3-/.test(model)) { await api("/api/local/activate", { id: model }); $("statustext").textContent = "جارٍ تحميل النموذج في الذاكرة…"; pollModels(); }
+    else await api("/api/chat/model", { llm_backend: backend, llm_model: model });
+  } catch (err) { alert(err.message); }
   loadStatus();
 };
+
+// ============================================================ on-device models
+const gb = (b) => (b / 1e9).toFixed(b < 1e9 ? 2 : 1) + " جيجابايت";
+let modelTimer = null;
+function pollModels() { clearTimeout(modelTimer); modelTimer = setTimeout(async () => { const st = await loadModels(); if (st && (st.state === "starting" || st.models.some((m) => m.download && ["downloading", "verifying"].includes(m.download.state)))) pollModels(); else loadStatus(); }, 1000); }
+async function loadModels() {
+  let st; try { st = await api("/api/local/models"); } catch { return null; }
+  kpis($("devicekpis"), [["ذاكرة الجهاز (RAM)", st.ram_gb ? st.ram_gb + " جيجابايت" : "غير معروفة"], ["مساحة فارغة", st.free_bytes ? gb(st.free_bytes) : "—"],
+    ["المحرك", st.engine ? "llama.cpp جاهز" : "غير مضمّن بعد"], ["الحالة", { stopped: "متوقف", starting: "يُحمَّل في الذاكرة…", running: "يعمل", error: "خطأ" }[st.state] || st.state]]);
+  const box = $("modelcards"); box.replaceChildren();
+  if (st.error) box.appendChild(el("pre", st.error, "box"));
+  st.models.forEach((m) => {
+    const c = el("div", null, "card mcard"); const info = el("div");
+    info.append(el("h3", m.name), el("div", `${m.params} معامل · ${gb(m.size)} · يحتاج ${m.min_ram_gb} جيجابايت RAM على الأقل`, "meta"), el("div", m.note, "meta"));
+    if (!m.fits) info.appendChild(el("div", "ذاكرة جهازك أقل من المطلوب: قد يكون بطيئًا جدًا أو يتوقف.", "meta warn"));
+    const btns = el("div", null, "btns"); const d = m.download;
+    const busy = d && ["downloading", "verifying"].includes(d.state);
+    if (m.active) btns.appendChild(chip("يعمل الآن", "ok"));
+    if (m.installed && !m.active) { const b = el("button", "تشغيل", "btn"); b.onclick = () => api("/api/local/activate", { id: m.id }).then(pollModels).catch((e) => alert(e.message)); btns.appendChild(b); }
+    if (m.active) { const b = el("button", "إيقاف", "btn alt"); b.onclick = () => api("/api/local/stop", {}).then(() => { loadModels(); loadStatus(); }); btns.appendChild(b); }
+    if (!m.installed && !busy) { const b = el("button", d && d.done ? "استكمال التنزيل" : "تنزيل", "btn"); b.onclick = () => api("/api/local/download", { id: m.id }).then(pollModels).catch((e) => alert(e.message)); btns.appendChild(b); }
+    if (busy) { const b = el("button", "إلغاء", "btn alt"); b.onclick = () => api("/api/local/cancel", { id: m.id }).then(loadModels); btns.appendChild(b); }
+    if (m.installed || (d && d.done)) { const b = el("button", "حذف", "btn alt"); b.onclick = () => confirm(`حذف ${m.name} من جهازك؟`) && api("/api/local/delete", { id: m.id }).then(() => { loadModels(); loadStatus(); }); btns.appendChild(b); }
+    c.append(info, btns);
+    if (d && !m.installed) {
+      const p = el("div", null, "prog"); const i = el("i"); i.style.width = Math.round(100 * d.done / d.total) + "%"; p.appendChild(i); c.appendChild(p);
+      c.appendChild(el("div", d.state === "verifying" ? "جارٍ التحقق من بصمة الملف…" : d.state === "error" ? "توقف: " + d.error : d.state === "cancelled" ? "أُلغي (يمكن الاستكمال)" : `${gb(d.done)} من ${gb(d.total)}`, "meta"));
+    }
+    box.appendChild(c);
+  });
+  return st;
+}
 
 // ============================================================ conversations
 let CONV = null, CONVS = [];

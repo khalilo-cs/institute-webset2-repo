@@ -129,6 +129,7 @@ DEFAULT_SETTINGS = {
     "allow_cloud_llm": True,        # False = only local models may see conversations
     "memory_answer_threshold": 0.9,
     "custom_instructions": "",
+    "local_model": "",              # on-device model to start automatically
 }
 
 

@@ -10,6 +10,7 @@ from pathlib import Path
 
 from .chat import ChatEngine
 from .core import Mosaic
+from .local_llm import LocalModels
 
 STATIC = Path(__file__).parent / "static"
 MAX_BODY = 256 * 1024
@@ -25,8 +26,9 @@ STATIC_FILES = {
 }
 
 
-def make_handler(mo: Mosaic, chat: ChatEngine | None = None):
+def make_handler(mo: Mosaic, chat: ChatEngine | None = None, local: LocalModels | None = None):
     chat = chat or ChatEngine(mo)
+    local = local or LocalModels(mo.m)
 
     class Handler(BaseHTTPRequestHandler):
         server_version = "MOSAIC/0.1"
@@ -109,6 +111,8 @@ def make_handler(mo: Mosaic, chat: ChatEngine | None = None):
                 return self._send(200, chat.search_conversations(q))
             if path == "/api/chat/status":
                 return self._send(200, chat.status())
+            if path == "/api/local/models":
+                return self._send(200, local.status())
             if path == "/api/memory":
                 return self._send(200, chat.preferences())
             if path == "/api/settings":
@@ -130,6 +134,21 @@ def make_handler(mo: Mosaic, chat: ChatEngine | None = None):
                 if path == "/api/chat/rename":
                     chat.rename(str(b["conversation_id"]), str(b.get("title", "")))
                     return self._send(200, {"ok": True})
+                if path == "/api/local/download":
+                    local.download(str(b["id"]))
+                    return self._send(200, local.status())
+                if path == "/api/local/cancel":
+                    local.cancel(str(b["id"]))
+                    return self._send(200, local.status())
+                if path == "/api/local/delete":
+                    local.delete(str(b["id"]))
+                    return self._send(200, local.status())
+                if path == "/api/local/activate":
+                    return self._send(200, local.activate(str(b["id"]), wait=False))
+                if path == "/api/local/stop":
+                    local.stop()
+                    mo.m.set_setting("local_model", "")
+                    return self._send(200, local.status())
                 if path == "/api/chat/model":
                     for k in ("llm_backend", "llm_model"):
                         if k in b:
@@ -190,13 +209,16 @@ def make_handler(mo: Mosaic, chat: ChatEngine | None = None):
 
 
 def serve(mo: Mosaic, host: str = "127.0.0.1", port: int = 8765, chat: ChatEngine | None = None) -> None:
-    httpd = ThreadingHTTPServer((host, port), make_handler(mo, chat))
+    local = LocalModels(mo.m)
+    local.autostart()  # bring back the on-device model the user chose last time
+    httpd = ThreadingHTTPServer((host, port), make_handler(mo, chat, local))
     print(f"MOSAIC يعمل على http://{host}:{port}")
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
         pass
     finally:
+        local.stop()
         httpd.server_close()
 
 

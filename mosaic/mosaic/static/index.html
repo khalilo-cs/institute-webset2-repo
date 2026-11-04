@@ -163,6 +163,11 @@ label.l{display:block;margin:10px 0 4px;color:var(--muted);font-size:13px}
 .barrow{display:flex;gap:8px;align-items:center}
 pre.box{white-space:pre-wrap;word-break:break-word;background:var(--code);padding:10px;border-radius:8px;font-size:13px;direction:ltr;text-align:left}
 .note{font-size:13px;color:var(--muted)}
+.mcard{display:grid;grid-template-columns:1fr auto;gap:6px 12px;align-items:center}
+.mcard h3{margin:0}
+.mcard .meta{color:var(--muted);font-size:13px}
+.prog{height:8px;border-radius:4px;background:var(--chip);overflow:hidden;grid-column:1/-1}
+.prog i{display:block;height:100%;background:var(--series-1);transition:width .4s}
 .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-bottom:4px}
 .legend i{display:inline-block;width:12px;height:3px;border-radius:2px;vertical-align:middle;margin-inline-end:6px}
 /* charts */
@@ -185,6 +190,8 @@ pre.box{white-space:pre-wrap;word-break:break-word;background:var(--code);paddin
   .topbar .menu{display:inline-flex}
   .suggest{grid-template-columns:1fr}
   .bubble{max-width:92%}
+  .status{display:none}
+  .kpi b{font-size:20px}
 }
 </style>
 </head>
@@ -196,6 +203,7 @@ pre.box{white-space:pre-wrap;word-break:break-word;background:var(--code);paddin
     <div class="search"><input id="convsearch" type="search" placeholder="ابحث في المحادثات…" aria-label="بحث"></div>
     <div id="convlist"></div>
     <nav class="sidenav" id="sidenav">
+      <button data-v="models"><svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/><path d="M9 9h6v6H9zM9 1v4M15 1v4M9 19v4M15 19v4M1 9h4M1 15h4M19 9h4M19 15h4"/></svg>النماذج على جهازك</button>
       <button data-v="dash"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>لوحة إثبات التطور</button>
       <button data-v="teach"><svg viewBox="0 0 24 24"><path d="M4 19.5V5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 1-2-1.5zM8 7h6"/></svg>تعليم ومهام</button>
       <button data-v="memory"><svg viewBox="0 0 24 24"><path d="M12 3a7 7 0 0 0-4 12.7V19h8v-3.3A7 7 0 0 0 12 3zM9 22h6"/></svg>الذاكرة <span id="pendingbadge" class="chip" hidden></span></button>
@@ -238,6 +246,15 @@ pre.box{white-space:pre-wrap;word-break:break-word;background:var(--code);paddin
         <div class="disclaimer">قد يخطئ MOSAIC والنموذج الذي يستخدمه. صحّح الأخطاء ليتعلم منها.</div>
       </div>
     </section>
+
+    <!-- ======== on-device models ======== -->
+    <section class="view" id="v-models"><div class="col panel">
+      <h2>النماذج على جهازك</h2>
+      <p class="note">نماذج مفتوحة تعمل داخل جهازك بالكامل: بدون إنترنت بعد التنزيل، وبدون أي خدمة سحابية. هي أضعف بكثير من النماذج الكبيرة مثل Claude، لكن MOSAIC يتعلم فوقها من تصحيحاتك.</p>
+      <div class="grid" id="devicekpis"></div>
+      <div id="modelcards"></div>
+      <p class="note">المصدر: نماذج Qwen3 الرسمية على Hugging Face (رخصة Apache 2.0). يُتحقق من بصمة كل ملف بعد تنزيله.</p>
+    </div></section>
 
     <!-- ======== dashboard ======== -->
     <section class="view" id="v-dash"><div class="col panel">
